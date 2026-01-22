@@ -1,0 +1,427 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mi Perfil - AutoGuest</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    <link rel="stylesheet" href="../../style.css">
+    <style>
+        .dashboard-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 40px;
+            background-color: #2c2c2c;
+            border-radius: 12px;
+            margin-bottom: 40px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 25px;
+        }
+
+        .dashboard-header .logo {
+            width: 110px;
+            display: block;
+        }
+
+        .back-to-dashboard {
+            color: #c0c0c0;
+            text-decoration: none;
+            font-size: 15px;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: color 0.3s ease;
+        }
+
+        .back-to-dashboard:hover {
+            color: #f39c12;
+        }
+
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .header-right .user-greeting {
+            font-size: 1.1em;
+            color: #c0c0c0;
+        }
+
+        .header-right .logout-btn {
+            background-color: transparent;
+            color: #f39c12;
+            border: 1px solid #f39c12;
+            padding: 10px 20px;
+            font-size: 14px;
+            text-decoration: none;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+        }
+
+        .header-right .logout-btn:hover {
+            background-color: #f39c12;
+            color: #1a1a1a;
+        }
+
+        .profile-container {
+            max-width: 800px;
+            margin: 40px auto;
+            padding: 0 20px;
+        }
+
+        .profile-header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .profile-header h1 {
+            font-size: 2.5em;
+            color: #ffffff;
+            margin-bottom: 10px;
+        }
+
+        .profile-header p {
+            font-size: 1.1em;
+            color: #c0c0c0;
+        }
+
+        .profile-card {
+            background-color: #2c2c2c;
+            border-radius: 12px;
+            padding: 40px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+        }
+
+        .profile-icon {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .profile-icon i {
+            font-size: 80px;
+            color: #f39c12;
+        }
+
+        .form-group {
+            margin-bottom: 25px;
+        }
+
+        .form-group label {
+            display: block;
+            color: #c0c0c0;
+            margin-bottom: 8px;
+            font-weight: 500;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 12px;
+            background-color: #1a1a1a;
+            border: 1px solid #555;
+            border-radius: 8px;
+            color: #f0f0f0;
+            font-size: 16px;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: #f39c12;
+        }
+
+        .form-group input:disabled {
+            background-color: #333;
+            cursor: not-allowed;
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 15px;
+            margin-top: 30px;
+        }
+
+        .btn {
+            flex: 1;
+            padding: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary {
+            background-color: #f39c12;
+            color: #1a1a1a;
+            border: none;
+        }
+
+        .btn-primary:hover {
+            background-color: #e67e22;
+        }
+
+        .btn-secondary {
+            background-color: transparent;
+            color: #c0c0c0;
+            border: 1px solid #555;
+        }
+
+        .btn-secondary:hover {
+            background-color: #333;
+        }
+
+        .password-section {
+            margin-top: 40px;
+            padding-top: 40px;
+            border-top: 1px solid #555;
+        }
+
+        .password-section h3 {
+            color: #ffffff;
+            margin-bottom: 20px;
+        }
+
+        .alert {
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            display: none;
+        }
+
+        .alert-success {
+            background-color: rgba(46, 204, 113, 0.2);
+            border: 1px solid #2ecc71;
+            color: #2ecc71;
+        }
+
+        .alert-error {
+            background-color: rgba(231, 76, 60, 0.2);
+            border: 1px solid #e74c3c;
+            color: #e74c3c;
+        }
+    </style>
+</head>
+
+<body>
+
+    <header class="dashboard-header">
+        <div class="header-left">
+            <a href="dashboard_cliente.html">
+                <img src="../../imagenes/Logo_Autoguest.png" alt="Logo de AutoGuest" class="logo">
+            </a>
+            <a href="dashboard_cliente.html" class="back-to-dashboard">
+                <i class="fas fa-arrow-left"></i>
+                <span>Volver al Panel</span>
+            </a>
+        </div>
+        <div class="header-right">
+            <div class="user-greeting">¡Hola, [Nombre]!</div>
+            <a href="../../index.html" class="logout-btn">Cerrar Sesión</a>
+        </div>
+    </header>
+
+    <main class="profile-container">
+        <div class="profile-header">
+            <h1>Mi Perfil</h1>
+            <p>Gestiona tu información personal</p>
+        </div>
+
+        <div id="alertContainer"></div>
+
+        <div class="profile-card">
+            <div class="profile-icon">
+                <i class="fas fa-user-circle"></i>
+            </div>
+
+            <form id="profileForm">
+                <div class="form-group">
+                    <label for="nombre">Nombre Completo</label>
+                    <input type="text" id="nombre" name="nombre" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="email">Correo Electrónico</label>
+                    <input type="email" id="email" name="email" required>
+                </div>
+
+                <div class="password-section">
+                    <h3>Cambiar Contraseña (Opcional)</h3>
+
+                    <div class="form-group">
+                        <label for="password">Nueva Contraseña</label>
+                        <input type="password" id="password" name="password"
+                            placeholder="Dejar en blanco para no cambiar">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="confirmPassword">Confirmar Nueva Contraseña</label>
+                        <input type="password" id="confirmPassword" name="confirmPassword"
+                            placeholder="Confirmar contraseña">
+                    </div>
+                </div>
+
+                <div class="btn-group">
+                    <button type="button" class="btn btn-secondary"
+                        onclick="window.location.href='dashboard_cliente.html'">
+                        Cancelar
+                    </button>
+                    <button type="submit" class="btn btn-primary">
+                        Guardar Cambios
+                    </button>
+                </div>
+            </form>
+        </div>
+    </main>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', async () => {
+            // Verificar autenticación
+            if (sessionStorage.getItem('isLoggedIn') !== 'true') {
+                alert('Tu sesión ha expirado. Por favor, inicia sesión de nuevo.');
+                window.location.href = '../../login_cliente.html';
+                return;
+            }
+
+            // Actualizar saludo
+            const userName = sessionStorage.getItem('userName');
+            if (userName) {
+                document.querySelector('.user-greeting').textContent = `¡Hola, ${userName}!`;
+            }
+
+            // Configurar logout
+            const logoutBtn = document.querySelector('.logout-btn');
+            if (logoutBtn) {
+                logoutBtn.addEventListener('click', async (e) => {
+                    e.preventDefault();
+                    try {
+                        await fetch('/api/registro/logout', { method: 'POST' });
+                        sessionStorage.clear();
+                        window.location.href = '../../index.html';
+                    } catch (error) {
+                        console.error('Error al cerrar sesión:', error);
+                    }
+                });
+            }
+
+            // Cargar datos del perfil
+            await loadProfile();
+
+            // Manejar envío del formulario
+            document.getElementById('profileForm').addEventListener('submit', async (e) => {
+                e.preventDefault();
+                await updateProfile();
+            });
+        });
+
+        async function loadProfile() {
+            try {
+                const response = await fetch('/api/perfil');
+                if (response.status === 401) {
+                    sessionStorage.clear();
+                    window.location.href = '../../login_cliente.html';
+                    return;
+                }
+
+                if (!response.ok) {
+                    throw new Error('Error al cargar perfil');
+                }
+
+                const data = await response.json();
+
+                // Llenar formulario
+                document.getElementById('nombre').value = data.nombre || '';
+                document.getElementById('email').value = data.email || '';
+
+            } catch (error) {
+                console.error('Error al cargar perfil:', error);
+                showAlert('Error al cargar los datos del perfil', 'error');
+            }
+        }
+
+        async function updateProfile() {
+            const nombre = document.getElementById('nombre').value.trim();
+            const email = document.getElementById('email').value.trim();
+            const password = document.getElementById('password').value;
+            const confirmPassword = document.getElementById('confirmPassword').value;
+
+            // Validar contraseñas si se están cambiando
+            if (password || confirmPassword) {
+                if (password !== confirmPassword) {
+                    showAlert('Las contraseñas no coinciden', 'error');
+                    return;
+                }
+                if (password.length < 6) {
+                    showAlert('La contraseña debe tener al menos 6 caracteres', 'error');
+                    return;
+                }
+            }
+
+            // Preparar datos
+            const updateData = { nombre, email };
+            if (password) {
+                updateData.password = password;
+            }
+
+            try {
+                const response = await fetch('/api/perfil', {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(updateData)
+                });
+
+                const result = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(result.error || 'Error al actualizar perfil');
+                }
+
+                // Actualizar sessionStorage
+                if (result.usuario) {
+                    sessionStorage.setItem('userName', result.usuario.nombre);
+                    document.querySelector('.user-greeting').textContent = `¡Hola, ${result.usuario.nombre}!`;
+                }
+
+                showAlert('Perfil actualizado con éxito', 'success');
+
+                // Limpiar campos de contraseña
+                document.getElementById('password').value = '';
+                document.getElementById('confirmPassword').value = '';
+
+            } catch (error) {
+                console.error('Error al actualizar perfil:', error);
+                showAlert(error.message, 'error');
+            }
+        }
+
+        function showAlert(message, type) {
+            const alertContainer = document.getElementById('alertContainer');
+            const alertClass = type === 'success' ? 'alert-success' : 'alert-error';
+
+            alertContainer.innerHTML = `
+                <div class="alert ${alertClass}">
+                    ${message}
+                </div>
+            `;
+
+            const alertElement = alertContainer.querySelector('.alert');
+            alertElement.style.display = 'block';
+
+            // Ocultar después de 5 segundos
+            setTimeout(() => {
+                alertElement.style.display = 'none';
+            }, 5000);
+        }
+    </script>
+</body>
+
+</html>

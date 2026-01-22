@@ -1,0 +1,705 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Detalle de la Cita - AutoGuest</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    <link rel="stylesheet" href="../../style.css">
+    <style>
+        /* Estilos de cabecera y página (sin cambios) */
+        .dashboard-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 40px;
+            background-color: #2c2c2c;
+            border-radius: 12px;
+            margin-bottom: 40px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 25px;
+        }
+
+        .dashboard-header .logo {
+            width: 110px;
+            display: block;
+        }
+
+        .back-link {
+            color: #c0c0c0;
+            text-decoration: none;
+            font-size: 15px;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: color 0.3s ease;
+        }
+
+        .back-link:hover {
+            color: #f39c12;
+        }
+
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .header-right .user-greeting {
+            font-size: 1.1em;
+            color: #c0c0c0;
+        }
+
+        .header-right .logout-btn {
+            background-color: transparent;
+            color: #f39c12;
+            border: 1px solid #f39c12;
+            padding: 10px 20px;
+            font-size: 14px;
+            text-decoration: none;
+            border-radius: 8px;
+        }
+
+        .page-container {
+            max-width: 900px;
+            margin: 40px auto;
+            padding: 0 20px;
+        }
+
+        .detail-header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .detail-header .icon {
+            font-size: 3.5em;
+            margin-bottom: 15px;
+        }
+
+        .detail-header .icon.taller {
+            color: #f39c12;
+        }
+
+        .detail-header .icon.parking {
+            color: #3498db;
+        }
+
+        .detail-header .icon.history {
+            color: #95a5a6;
+        }
+
+        .detail-header h1 {
+            font-size: 2.5em;
+            color: #ffffff;
+            margin-bottom: 5px;
+        }
+
+        .detail-header p {
+            font-size: 1.2em;
+            color: #c0c0c0;
+        }
+
+        .detail-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 30px;
+        }
+
+        .detail-card {
+            background-color: #2c2c2c;
+            border-radius: 12px;
+            padding: 30px;
+        }
+
+        .detail-card h2 {
+            font-size: 1.6em;
+            color: #ffffff;
+            margin-top: 0;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #444;
+        }
+
+        .info-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .info-list li {
+            display: flex;
+            justify-content: space-between;
+            padding: 12px 0;
+            border-bottom: 1px solid #3a3a3a;
+        }
+
+        .info-list li:last-child {
+            border-bottom: none;
+        }
+
+        .info-list .label {
+            color: #a0a0a0;
+        }
+
+        .info-list .value {
+            color: #ffffff;
+        }
+
+        .map-container {
+            width: 100%;
+            height: 250px;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        .map-container img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .actions-card .actions-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .actions-card .btn {
+            width: 100%;
+            max-width: 300px;
+        }
+
+        .btn-danger {
+            background-color: #e74c3c;
+            border: 1px solid #e74c3c;
+            color: white;
+        }
+
+        .info-list .value.status-completed {
+            color: #2ecc71;
+            font-weight: bold;
+        }
+
+        /* Estilos para Modales (Chat) */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(5px);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .modal-overlay.active {
+            display: flex;
+        }
+
+        .close-btn {
+            background: none;
+            border: none;
+            color: #a0a0a0;
+            font-size: 24px;
+            cursor: pointer;
+        }
+
+        /* Modal de Chat */
+        .chat-modal-content {
+            background-color: #2c2c2c;
+            border-radius: 12px;
+            width: 100%;
+            max-width: 450px;
+            height: 80vh;
+            max-height: 600px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .chat-header {
+            padding: 15px 20px;
+            background-color: #3f3f3f;
+            border-top-left-radius: 12px;
+            border-top-right-radius: 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .chat-header-info h3 {
+            margin: 0;
+            font-size: 1.2em;
+            color: #ffffff;
+        }
+
+        .chat-header-info p {
+            margin: 0;
+            font-size: 0.9em;
+            color: #a0a0a0;
+        }
+
+        .chat-messages {
+            flex-grow: 1;
+            padding: 20px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .message {
+            max-width: 80%;
+            padding: 10px 15px;
+            border-radius: 18px;
+            line-height: 1.4;
+        }
+
+        .message.received {
+            background-color: #3f3f3f;
+            color: #e0e0e0;
+            border-bottom-left-radius: 4px;
+            align-self: flex-start;
+        }
+
+        .message.sent {
+            background-color: #f39c12;
+            color: #1a1a1a;
+            border-bottom-right-radius: 4px;
+            align-self: flex-end;
+        }
+
+        .chat-input-area {
+            padding: 15px;
+            border-top: 1px solid #444;
+        }
+
+        .chat-input-area form {
+            display: flex;
+            gap: 10px;
+        }
+
+        .chat-input {
+            flex-grow: 1;
+            padding: 12px;
+            background-color: #1a1a1a;
+            border: 1px solid #555;
+            border-radius: 8px;
+            color: #f0f0f0;
+        }
+
+        .send-btn {
+            background-color: #f39c12;
+            border: none;
+            color: #1a1a1a;
+            border-radius: 8px;
+            padding: 0 20px;
+            cursor: pointer;
+            font-size: 1.2em;
+        }
+
+        /* Se elimina el modal de Ticket ya que solo es para parking */
+    </style>
+</head>
+
+<body>
+
+    <header class="dashboard-header">
+        <div class="header-left">
+            <a href="dashboard_cliente.html"><img src="../../imagenes/Logo_Autoguest.png" alt="Logo de AutoGuest"
+                    class="logo"></a>
+            <a href="mis_citas.html" class="back-link"><i class="fas fa-arrow-left"></i><span>Volver a Mis
+                    Citas</span></a>
+        </div>
+        <div class="header-right">
+            <div class="user-greeting">¡Hola, [Nombre del Cliente]!</div>
+            <a href="../../index.html" class="logout-btn">Cerrar Sesión</a>
+        </div>
+    </header>
+
+    <main class="page-container">
+        <div class="detail-header" id="detailHeader"></div>
+        <div class="detail-grid">
+            <div class="detail-card">
+                <h2 id="serviceCardTitle"></h2>
+                <ul class="info-list" id="serviceInfoList"></ul>
+            </div>
+            <div class="detail-card" id="locationCard">
+                <h2>Ubicación</h2>
+                <div class="map-container">
+                    <img src="../../imagenes/ubi_acostado.jpg" alt="Mapa de la ubicación del servicio">
+                </div>
+            </div>
+            <div class="detail-card" id="actionsCard">
+                <h2>Acciones</h2>
+                <div class="actions-container" id="actionsContainer"></div>
+            </div>
+        </div>
+    </main>
+
+    <div class="modal-overlay" id="chatModal">
+        <div class="chat-modal-content">
+            <div class="chat-header">
+                <div class="chat-header-info">
+                    <h3 id="chat-partner-name"></h3>
+                    <p id="chat-partner-contact"></p>
+                </div>
+                <button class="close-btn" id="closeChatBtn">×</button>
+            </div>
+            <div class="chat-messages" id="chatMessages"></div>
+            <div class="chat-input-area">
+                <form id="chatForm">
+                    <input type="text" id="chatInput" class="chat-input" placeholder="Escribe un mensaje..."
+                        autocomplete="off">
+                    <button type="submit" class="send-btn"><i class="fas fa-paper-plane"></i></button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://sdk.mercadopago.com/js/v2"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', async () => {
+            // --- INICIO: Guardián de Autenticación y Personalización ---
+            if (sessionStorage.getItem('isLoggedIn') !== 'true') {
+                alert('Tu sesión ha expirado. Por favor, inicia sesión de nuevo.');
+                window.location.href = '../../login_cliente.html';
+                return;
+            }
+
+            const userName = sessionStorage.getItem('userName');
+            if (userName) {
+                document.querySelector('.header-right .user-greeting').textContent = `¡Hola, ${userName}!`;
+            }
+
+            const logoutBtn = document.querySelector('.logout-btn');
+            if (logoutBtn) {
+                logoutBtn.addEventListener('click', async (e) => {
+                    e.preventDefault();
+                    try {
+                        const response = await fetch('/api/registro/logout', { method: 'POST' });
+                        if (response.ok) {
+                            sessionStorage.clear();
+                            window.location.href = '../../index.html';
+                        } else {
+                            alert('Error al cerrar sesión.');
+                        }
+                    } catch (error) {
+                        alert('Error de red al cerrar sesión.');
+                    }
+                });
+            }
+            // --- FIN: Guardián de Autenticación ---
+
+            const params = new URLSearchParams(window.location.search);
+            const idCita = params.get('id');
+
+            if (!idCita) {
+                alert('No se especificó ninguna cita.');
+                window.location.href = 'mis_citas.html';
+                return;
+            }
+
+            const detailHeader = document.getElementById('detailHeader'), serviceCardTitle = document.getElementById('serviceCardTitle');
+            const serviceInfoList = document.getElementById('serviceInfoList'), locationCard = document.getElementById('locationCard');
+            const actionsContainer = document.getElementById('actionsContainer');
+
+            const chatModal = document.getElementById('chatModal'), closeChatBtn = document.getElementById('closeChatBtn');
+            const chatForm = document.getElementById('chatForm'), chatInput = document.getElementById('chatInput');
+            const chatMessages = document.getElementById('chatMessages'), chatPartnerName = document.getElementById('chat-partner-name');
+            const chatPartnerContact = document.getElementById('chat-partner-contact');
+
+            try {
+                const response = await fetch(`/api/citas/${idCita}`);
+                if (!response.ok) throw new Error('Error al cargar la cita');
+
+                const cita = await response.json();
+
+                const fecha = new Date(cita.fechaHora).toLocaleString('es-ES', { dateStyle: 'long', timeStyle: 'short' });
+                const isCompleted = cita.estado === 'Completado';
+
+                // Configurar Header
+                detailHeader.innerHTML = `
+                    <i class="icon fas fa-wrench taller"></i>
+                    <h1>Cita en ${cita.tallerNombre}</h1>
+                    <p>${cita.tallerDireccion || 'Dirección no disponible'}</p>
+                `;
+
+                // Configurar Tarjeta de Servicio
+                serviceCardTitle.textContent = 'Detalles del Servicio';
+                serviceInfoList.innerHTML = `
+                    <li><span class="label">Estado</span><span class="value" style="color: ${isCompleted ? '#2ecc71' : '#f39c12'}">${cita.estado}</span></li>
+                    <li><span class="label">Fecha y Hora</span><span class="value">${fecha}</span></li>
+                    <li><span class="label">Vehículo</span><span class="value">${cita.vehiculoMarca} ${cita.vehiculoModelo} (${cita.vehiculoPlaca})</span></li>
+                    <li><span class="label">Mecánico</span><span class="value">${cita.mecanicoNombre || 'Pendiente de asignación'}</span></li>
+                `;
+
+                // Configurar Acciones
+                let actionsHtml = '';
+                if (cita.estado === 'Pendiente' || cita.estado === 'Pendiente de Cotización') {
+                    actionsHtml += `<button id="cancelarCitaTaller" class="btn btn-danger">Cancelar Cita</button>`;
+                    actionsHtml += `<button id="contactarTaller" class="btn btn-secondary">Contactar Taller</button>`;
+                } else if (cita.estado === 'Cotizado') {
+                    actionsHtml += `<button id="pagarCita" class="btn">Pagar Cotización</button>`;
+                } else if (isCompleted) {
+                    actionsHtml += `<button id="descargarFactura" class="btn">Descargar Factura</button>`;
+                    actionsHtml += `<button id="reservarDeNuevo" class="btn btn-secondary">Reservar de Nuevo</button>`;
+                }
+
+                // Contenedores de pago
+                actionsHtml += `
+                    <div id="paypal-button-container" style="width: 100%; max-width: 300px; margin-top: 15px; display: none;"></div>
+                    <div id="mercadopago-button-container" style="width: 100%; max-width: 300px; margin-top: 15px;"></div>
+                    <div id="payment-message" style="display: none; margin-top: 15px; padding: 15px; border-radius: 8px; width: 100%; max-width: 300px; text-align: center; color: white;"></div>
+                `;
+
+                actionsContainer.innerHTML = actionsHtml;
+
+                // Listeners de Acciones
+                actionsContainer.addEventListener('click', (e) => {
+                    const targetId = e.target.id;
+                    if (!targetId) return;
+                    switch (targetId) {
+                        case 'pagarCita':
+                            document.getElementById('paypal-button-container').style.display = 'block';
+                            e.target.style.display = 'none';
+                            break;
+                        case 'contactarTaller':
+                            chatPartnerName.textContent = cita.tallerNombre;
+                            chatPartnerContact.textContent = 'Chat directo';
+                            chatModal.classList.add('active');
+                            break;
+                        case 'cancelarCitaTaller':
+                            if (confirm('¿Estás seguro de que quieres cancelar?')) {
+                                // Aquí iría la lógica de cancelación real (PUT /api/citas/:id/estado)
+                                alert('Funcionalidad de cancelación en desarrollo.');
+                            }
+                            break;
+                        case 'reservarDeNuevo':
+                            window.location.href = 'buscar_talleres.html';
+                            break;
+                    }
+                });
+
+            } catch (error) {
+                console.error(error);
+                detailHeader.innerHTML = '<h1>Error al cargar la cita</h1>';
+                serviceInfoList.innerHTML = '<li>No se pudo encontrar la información.</li>';
+            }
+
+            const closeModal = (modal) => modal.classList.remove('active');
+            closeChatBtn.addEventListener('click', () => closeModal(chatModal));
+            chatModal.addEventListener('click', (e) => { if (e.target === chatModal) closeModal(chatModal); });
+
+            chatForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+                const messageText = chatInput.value.trim();
+                if (messageText) {
+                    const newMessage = document.createElement('div');
+                    newMessage.classList.add('message', 'sent');
+                    newMessage.textContent = messageText;
+                    chatMessages.appendChild(newMessage);
+                    chatInput.value = '';
+                    chatMessages.scrollTop = chatMessages.scrollHeight;
+                }
+            });
+        });
+
+        let mp; // Declarar mp en un alcance más alto
+
+        // 1. Obtener la Public Key del servidor
+        fetch('/api/mercadopago/public-key')
+            .then(response => response.json())
+            .then(data => {
+                if (data.publicKey) {
+                    // 2. Inicializar MercadoPago con la clave obtenida
+                    mp = new MercadoPago(data.publicKey, {
+                        locale: 'es-MX'
+                    });
+                } else {
+                    console.error('Error: Public key no recibida del servidor.');
+                    const messageDiv = document.getElementById('payment-message');
+                    messageDiv.textContent = 'Error de configuración de pagos. Contacte a soporte.';
+                    messageDiv.style.backgroundColor = '#e74c3c';
+                    messageDiv.style.display = 'block';
+                }
+            })
+            .catch(error => {
+                console.error('Error fetching public key:', error);
+                const messageDiv = document.getElementById('payment-message');
+                messageDiv.textContent = 'No se pudo inicializar el sistema de pagos.';
+                messageDiv.style.backgroundColor = '#e74c3c';
+                messageDiv.style.display = 'block';
+            });
+
+
+        function handleMercadoPago() {
+            // Asegurarse de que mp está inicializado
+            if (!mp) {
+                console.error('Mercado Pago SDK no se ha inicializado.');
+                alert('El sistema de pagos no está listo. Por favor, espera un momento y vuelve a intentarlo.');
+                return;
+            }
+
+            // Deshabilitar el botón para evitar clics múltiples
+            const pagarBtn = document.getElementById('pagarMercadoPago');
+            pagarBtn.disabled = true;
+
+            fetch('/api/mercadopago/create-preference', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    id_cotizacion: 'COTO001' // ID de cotización de prueba
+                })
+            })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Error en el servidor al crear la preferencia');
+                    }
+                    return response.json();
+                })
+                .then(preference => {
+                    // Ocultar botón original y mostrar el de MP
+                    pagarBtn.style.display = 'none';
+
+                    mp.checkout({
+                        preference: {
+                            id: preference.id
+                        },
+                        render: {
+                            container: '#mercadopago-button-container',
+                            label: 'Pagar ahora'
+                        }
+                    });
+                })
+                .catch(error => {
+                    console.error('Error creating preference:', error);
+                    const messageDiv = document.getElementById('payment-message');
+                    messageDiv.textContent = 'Ocurrió un error al procesar su pago. Por favor, contacte a soporte.';
+                    messageDiv.style.backgroundColor = '#e74c3c'; // Rojo
+                    messageDiv.style.display = 'block';
+                    // Reactivar el botón si hay un error
+                    pagarBtn.disabled = false;
+                });
+        }
+    </script>
+
+    <!-- 
+        SDK de PayPal 
+        RECUERDA REEMPLAZAR 'TU_CLIENT_ID_DE_SANDBOX' con tu Client ID real de Sandbox que está en tu archivo .env
+    -->
+    <script
+        src="https://www.paypal.com/sdk/js?client-id=ASU5dGljUFL37x21VY77rYpGSXaJfOtIYXEesc37ps-JYJR3YOPR2gxPfTP1no5bS_KwMBAhfesPUbUb&currency=MXN"></script>
+
+    <script>
+        // Lógica para renderizar el botón de PayPal
+        // Asumimos que tenemos un id_cotizacion para este ejemplo
+        const idCotizacionParaPagar = 1;
+
+        paypal.Buttons({
+            // 1. Crear la orden en nuestro servidor
+            createOrder: function () {
+                return fetch('/api/paypal/create-order', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    // Enviamos el ID de la cotización que queremos pagar
+                    body: JSON.stringify({
+                        id_cotizacion: 'COTO001' // ID de cotización de prueba
+                    })
+                }).then(function (res) {
+                    if (!res.ok) {
+                        // Si el servidor responde con un error, lo mostramos
+                        return res.json().then(err => {
+                            const messageDiv = document.getElementById('payment-message');
+                            messageDiv.textContent = err.message || 'Error del servidor al crear la orden.';
+                            messageDiv.style.backgroundColor = '#e74c3c'; // Rojo
+                            messageDiv.style.display = 'block';
+                            throw new Error(err.message || 'Error del servidor');
+                        });
+                    }
+                    return res.json();
+                }).then(function (orderData) {
+                    console.log('Order ID:', orderData.orderID);
+                    return orderData.orderID;
+                }).catch(function (err) {
+                    console.error('Error en createOrder:', err);
+                });
+            },
+
+            // 2. Capturar el pago cuando el usuario aprueba
+            onApprove: function (data, actions) {
+                const messageDiv = document.getElementById('payment-message');
+                return fetch('/api/paypal/capture-order', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        orderID: data.orderID
+                    })
+                }).then(function (res) {
+                    if (!res.ok) {
+                        return res.json().then(err => { throw new Error(err.message || 'Error del servidor'); });
+                    }
+                    return res.json();
+                }).then(function (orderData) {
+                    console.log('Pago capturado:', orderData);
+
+                    // Ocultar el botón de PayPal
+                    document.getElementById('paypal-button-container').style.display = 'none';
+
+                    // Mostrar mensaje de éxito
+                    messageDiv.textContent = '¡Pago completado con éxito! Redirigiendo...';
+                    messageDiv.style.backgroundColor = '#2ecc71'; // Verde
+                    messageDiv.style.display = 'block';
+
+                    // Redirigir después de unos segundos
+                    setTimeout(() => window.location.href = 'mis_citas.html', 3000);
+
+                }).catch(function (err) {
+                    console.error('Error en onApprove:', err);
+
+                    // Mostrar mensaje de error
+                    messageDiv.textContent = 'Ocurrió un error al procesar su pago. Por favor, contacte a soporte.';
+                    messageDiv.style.backgroundColor = '#e74c3c'; // Rojo
+                    messageDiv.style.display = 'block';
+                });
+            },
+
+            // 3. Manejar errores del lado del cliente
+            onError: function (err) {
+                console.error('Error en el botón de PayPal:', err);
+                const messageDiv = document.getElementById('payment-message');
+                messageDiv.textContent = 'Ocurrió un error inesperado con PayPal. Por favor, recarga la página.';
+                messageDiv.style.backgroundColor = '#e74c3c'; // Rojo
+                messageDiv.style.display = 'block';
+            },
+
+            // 4. Manejar cancelación del usuario
+            onCancel: function (data) {
+                console.log('Pago cancelado. Order ID:', data.orderID);
+                const messageDiv = document.getElementById('payment-message');
+                messageDiv.textContent = 'Has cancelado el pago.';
+                messageDiv.style.backgroundColor = '#f39c12'; // Naranja
+                messageDiv.style.display = 'block';
+            }
+        }).render('#paypal-button-container');
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,76 @@
+const express = require('express');
+const { nanoid } = require('nanoid');
+const db = require('../config/database');
+const router = express.Router();
+
+// Middleware para verificar que sea Taller o Mecánico
+const isAuth = (req, res, next) => {
+    if (req.session.userId && (req.session.role === 'taller' || req.session.role === 'mecanico')) {
+        next();
+    } else {
+        res.status(401).json({ error: 'No autorizado' });
+    }
+};
+
+const isTaller = (req, res, next) => {
+    if (req.session.userId && req.session.role === 'taller') next();
+    else res.status(401).json({ error: 'No autorizado' });
+};
+
+// 1. OBTENER SERVICIOS
+router.get('/', isAuth, async (req, res) => {
+    try {
+        const idTaller = req.session.tallerId; // Mecanicos also have tallerId in session
+
+        const [servicios] = await db.query('SELECT * FROM servicio WHERE idTaller = ?', [idTaller]);
+        const [tallerInfo] = await db.query('SELECT nombre FROM taller WHERE idTaller = ?', [idTaller]);
+
+        res.json({
+            servicios,
+            nombreTaller: tallerInfo.length > 0 ? tallerInfo[0].nombre : 'Mi Taller'
+        });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: 'Error al cargar servicios' });
+    }
+});
+
+// 2. AGREGAR SERVICIO
+router.post('/', isTaller, async (req, res) => {
+    const { nombre, descripcion, precio } = req.body;
+    const idTaller = req.session.tallerId;
+
+    if (!nombre || !precio) return res.status(400).json({ error: 'Faltan datos' });
+
+    try {
+        const idServicio = 'SERV-' + nanoid(6);
+        await db.query(
+            'INSERT INTO servicio (idServicio, idTaller, nombre, descripcion, precio) VALUES (?, ?, ?, ?, ?)',
+            [idServicio, idTaller, nombre, descripcion, precio]
+        );
+        res.json({ success: true });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: 'Error al guardar' });
+    }
+});
+
+// 3. ELIMINAR SERVICIO
+router.delete('/:id', isTaller, async (req, res) => {
+    try {
+        await db.query('DELETE FROM servicio WHERE idServicio = ? AND idTaller = ?', [req.params.id, req.session.tallerId]);
+        res.json({ success: true });
+    } catch (error) {
+        res.status(500).json({ error: 'Error al eliminar' });
+    }
+});
+
+// Archivo de rutas (ej: routes/servicios.js o app.js)
+
+// Fíjate si la ruta incluye "/taller" o no.
+// A veces la ruta es solo '/api/servicios/:id' sin la palabra 'taller'.
+
+router.put('/servicios/:id', (req, res) => {
+    // ... lógica para actualizar en base de datos
+});
+module.exports = router;

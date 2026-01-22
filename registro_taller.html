@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registro de Taller - AutoGuest</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <div class="form-page-wrapper">
+        <div class="form-image-column">
+            <div class="logo-link">
+                <a href="home.html">
+                    <img src="imagenes/Logo_Autoguest.png" alt="Logo de AutoGuest">
+                </a>
+            </div>
+            <div class="image-text">
+                <h2>Conecta con más conductores que nunca.</h2>
+                <p>Digitaliza tu negocio, gestiona tus citas y haz crecer tu taller con nuestra plataforma.</p>
+            </div>
+        </div>
+
+        <div class="form-content-column">
+            <div class="form-container">
+                <h1>Registra tu Taller</h1>
+                <p>Únete a nuestra red y digitaliza tus servicios.</p>
+                
+                <form id="registroForm">
+                    <div class="form-group">
+                        <label for="admin-name">Nombre del Encargado / Administrador</label>
+                        <input type="text" id="admin-name" class="form-control" placeholder="Ej: Juan Pérez" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="workshop-name">Nombre del Taller</label>
+                        <input type="text" id="workshop-name" class="form-control" placeholder="Ej: Mecánica Express" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="address">Dirección del Taller</label>
+                        <input type="text" id="address" class="form-control" placeholder="Calle, número, colonia, ciudad" required>
+                    </div>
+                        
+                    <div class="form-group">
+                        <label for="email">Email de Contacto</label>
+                        <input type="email" id="email" class="form-control" placeholder="contacto@taller.com" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="phone">Teléfono</label>
+                        <input type="tel" id="phone" class="form-control" placeholder="Ej: 5551234567" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="password">Crear Contraseña</label>
+                        <input type="password" id="password" class="form-control" placeholder="Mínimo 8 caracteres" required>
+                    </div>
+                    
+                    <button type="submit" class="btn">Solicitar Registro</button>
+                </form>
+
+                <div class="extra-link">
+                    <p>¿Ya eres socio? <a href="login_taller.html">Inicia Sesión</a></p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('registroForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            // 2. CAPTURAR EL NUEVO CAMPO
+            const nombreAdmin = document.getElementById('admin-name').value; // <--- NUEVO
+            const nombreTaller = document.getElementById('workshop-name').value;
+            const direccion = document.getElementById('address').value;
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            const telefono = document.getElementById('phone').value;
+
+            if(!telefono || telefono.length < 10) {
+                alert("Por favor ingresa un teléfono válido.");
+                return;
+            }
+
+            try {
+                const response = await fetch('/api/registro/taller', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    // 3. ENVIARLO AL BACKEND
+                    body: JSON.stringify({ 
+                        nombreAdmin, // <--- AQUI SE ENVÍA EL NOMBRE DE LA PERSONA
+                        nombreTaller, // <--- AQUI EL DEL NEGOCIO
+                        direccion, 
+                        email, 
+                        password, 
+                        telefono 
+                    })
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    alert('¡Taller registrado exitosamente! Ahora puedes iniciar sesión.');
+                    window.location.href = 'login_taller.html';
+                } else {
+                    alert('Error: ' + data.mensaje);
+                }
+
+            } catch (error) {
+                console.error('Error:', error);
+                alert('No se pudo conectar con el servidor.');
+            }
+        });
+    </script>
+</body>
+</html>

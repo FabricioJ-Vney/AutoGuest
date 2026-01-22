@@ -1,0 +1,522 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Portal de Mecánico - AutoGuest</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
+    <style>
+        /* === ESTILOS COPIADOS DEL PORTAL DE TALLER (Para garantizar identidad visual) === */
+        body {
+            background-color: #202020;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            color: white;
+        }
+
+        /* Cabecera idéntica */
+        .portal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 40px;
+            background-color: #1a1a1a;
+            border-bottom: 1px solid #333;
+        }
+
+        .portal-header .logo {
+            width: 120px;
+        }
+
+        .portal-header .header-info {
+            text-align: right;
+        }
+
+        .portal-header .header-info h2 {
+            margin: 0;
+            font-size: 1.2em;
+            color: #ffffff;
+        }
+
+        .portal-header .header-info p {
+            margin: 0;
+            font-size: 0.9em;
+            color: #a0a0a0;
+        }
+
+        .logout-btn {
+            background: none;
+            border: 1px solid #f39c12;
+            color: #f39c12;
+            padding: 8px 16px;
+            border-radius: 8px;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .logout-btn:hover {
+            background-color: #f39c12;
+            color: #1a1a1a;
+        }
+
+        /* Contenedor */
+        .portal-container {
+            max-width: 1300px;
+            margin: 40px auto;
+            padding: 0 20px;
+        }
+
+        .main-title {
+            font-size: 2.5em;
+            color: #ffffff;
+            margin-bottom: 30px;
+            border-bottom: 1px solid #444;
+            padding-bottom: 15px;
+        }
+
+        /* === ESTILOS ESPECÍFICOS DEL MECÁNICO (Adaptados al tema oscuro) === */
+
+        .jobs-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            /* Tarjetas responsivas */
+            gap: 20px;
+        }
+
+        /* Usamos el mismo estilo de fondo que tus .kpi-card */
+        .job-card {
+            background-color: #2c2c2c;
+            border-radius: 12px;
+            padding: 25px;
+            border-left: 5px solid #f39c12;
+            /* Detalle naranja */
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+            transition: transform 0.3s ease;
+        }
+
+        .job-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .job-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            border-bottom: 1px solid #444;
+            padding-bottom: 10px;
+        }
+
+        .job-header h3 {
+            margin: 0;
+            color: #f39c12;
+            font-size: 1.5em;
+        }
+
+        .job-details p {
+            margin: 8px 0;
+            color: #d0d0d0;
+            font-size: 1em;
+        }
+
+        .job-details i {
+            width: 25px;
+            color: #f39c12;
+            text-align: center;
+        }
+
+        /* Botones y Formularios Oscuros */
+        .action-btn {
+            background-color: #f39c12;
+            color: #1a1a1a;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            width: 100%;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 15px;
+            transition: background 0.3s;
+        }
+
+        .action-btn:hover {
+            background-color: #e67e22;
+        }
+
+        /* Formulario desplegable oscuro */
+        .quote-form {
+            display: none;
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 1px dashed #555;
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+
+            to {
+                opacity: 1;
+            }
+        }
+
+        .form-group {
+            margin-bottom: 10px;
+        }
+
+        .form-label {
+            display: block;
+            color: #a0a0a0;
+            font-size: 0.85em;
+            margin-bottom: 5px;
+        }
+
+        /* Inputs oscuros para que no brillen */
+        .dark-input {
+            width: 100%;
+            background-color: #333;
+            border: 1px solid #555;
+            color: white;
+            padding: 8px;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+
+        .dark-input:focus {
+            outline: none;
+            border-color: #f39c12;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 5px 10px;
+            border-radius: 4px;
+            font-size: 0.8em;
+            font-weight: bold;
+        }
+
+        .status-pending {
+            background-color: #444;
+            color: #f39c12;
+            border: 1px solid #f39c12;
+        }
+
+        .status-completed {
+            background-color: #2ecc71;
+            color: #1a1a1a;
+        }
+    </style>
+</head>
+
+<body>
+
+    <header class="portal-header">
+        <a href="#">
+            <img src="imagenes/Logo_Autoguest.png" alt="Logo de AutoGuest" class="logo">
+        </a>
+        <div class="header-info">
+            <h2 id="mechanicName">Panel de Mecánico</h2>
+            <p>Gestión de Servicios</p>
+        </div>
+        <a href="#" id="logoutBtn" class="logout-btn">Cerrar Sesión</a>
+    </header>
+
+    <main class="portal-container">
+        <div
+            style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; border-bottom: 1px solid #444; padding-bottom: 15px;">
+            <h1 style="margin:0; font-size: 2.5em; color: white;">Trabajos Asignados</h1>
+            <button class="action-btn" style="width: auto; margin:0;" onclick="openNewJobModal()">
+                <i class="fas fa-plus-circle"></i> Nuevo Trabajo Express
+            </button>
+        </div>
+
+        <div id="listaTrabajos" class="jobs-grid">
+            <p style="color: #a0a0a0; grid-column: 1/-1; text-align: center;">
+                <i class="fas fa-spinner fa-spin"></i> Cargando citas...
+            </p>
+        </div>
+    </main>
+
+    <!-- MODAL NUEVO TRABAJO -->
+    <div id="new-job-modal" class="modal"
+        style="display:none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(0,0,0,0.8);">
+        <div class="modal-content"
+            style="background-color: #2c2c2c; margin: 5% auto; padding: 20px; border: 1px solid #888; width: 90%; max-width: 500px; border-radius: 10px; color: white;">
+            <span style="color: #aaa; float: right; font-size: 28px; font-weight: bold; cursor: pointer;"
+                onclick="closeNewJobModal()">&times;</span>
+            <h2 style="color: #f39c12; margin-top: 0;">Nuevo Trabajo Express</h2>
+            <p style="color: #ccc; font-size: 0.9em;">Registra un cliente y vehículo rápidamente.</p>
+
+            <form id="express-form">
+                <h3 style="border-bottom: 1px solid #444; padding-bottom: 5px; margin-top: 20px;">Cliente</h3>
+                <div class="form-group">
+                    <label class="form-label">Nombre Completo:</label>
+                    <input type="text" class="dark-input" id="new-nombre" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Teléfono (10 dígitos):</label>
+                    <input type="tel" class="dark-input" id="new-telefono" pattern="[0-9]{10}" required>
+                </div>
+
+                <h3 style="border-bottom: 1px solid #444; padding-bottom: 5px; margin-top: 20px;">Vehículo</h3>
+                <div class="form-group">
+                    <label class="form-label">Placa:</label>
+                    <input type="text" class="dark-input" id="new-placa" required style="text-transform: uppercase;">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Marca:</label>
+                    <input type="text" class="dark-input" id="new-marca" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Modelo:</label>
+                    <input type="text" class="dark-input" id="new-modelo" required>
+                </div>
+
+                <button type="submit" class="action-btn" style="margin-top: 20px; background-color: #f39c12;">Crear
+                    Trabajo</button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        let availableServices = [];
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const userName = sessionStorage.getItem('userName');
+            if (userName) document.getElementById('mechanicName').textContent = "Mecánico: " + userName;
+
+            document.getElementById('logoutBtn').addEventListener('click', (e) => {
+                e.preventDefault();
+                sessionStorage.clear();
+                window.location.href = 'index.html';
+            });
+
+            // Cargar datos reales
+            loadServices();
+            cargarCitas();
+
+            // Evento Formulario Express
+            document.getElementById('express-form').addEventListener('submit', handleExpressSubmit);
+        });
+
+        // 1. Obtener servicios del taller para llenar el select
+        async function loadServices() {
+            try {
+                const res = await fetch('/api/taller/servicios');
+                if (res.ok) {
+                    const data = await res.json();
+                    availableServices = data.servicios || [];
+                }
+            } catch (e) { console.error("Error cargando servicios", e); }
+        }
+
+        // 2. Cargar Citas Asignadas
+        async function cargarCitas() {
+            const container = document.getElementById('listaTrabajos');
+            container.innerHTML = '<p style="color: #a0a0a0; grid-column: 1/-1; text-align: center;"><i class="fas fa-spinner fa-spin"></i> Cargando citas...</p>';
+
+            try {
+                const res = await fetch('/api/mecanico/mis-citas');
+                if (!res.ok) throw new Error('Error al obtener citas');
+
+                const citas = await res.json();
+                container.innerHTML = '';
+
+                if (citas.length === 0) {
+                    container.innerHTML = '<p style="text-align: center; color: #aaa; grid-column: 1/-1;">No tienes trabajos pendientes.</p>';
+                    return;
+                }
+
+                citas.forEach(cita => {
+                    const card = document.createElement('div');
+                    card.className = 'job-card';
+
+                    let actionArea = '';
+                    if (cita.estado === 'Pendiente' || cita.estado === 'En Progreso') { // Allow diagnosis for created jobs too
+                        // Construir opciones del select
+                        let options = '<option value="">-- Seleccionar Servicio (Opcional) --</option>';
+                        availableServices.forEach(s => {
+                            options += `<option value="${s.idServicio}" data-price="${s.precio}" data-desc="${s.descripcion}">${s.nombre} - $${s.precio}</option>`;
+                        });
+
+                        actionArea = `
+                            <button class="action-btn" onclick="toggleForm(${cita.idCita})">
+                                <i class="fas fa-wrench"></i> Diagnosticar / Cotizar
+                            </button>
+                            <div id="form-${cita.idCita}" class="quote-form">
+                                <div class="form-group">
+                                    <label class="form-label">Cargar Servicio Predefinido:</label>
+                                    <select class="dark-input" onchange="fillServiceInfo(this, ${cita.idCita})">
+                                        ${options}
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">Diagnóstico:</label>
+                                    <input type="text" class="dark-input" id="diag-${cita.idCita}" placeholder="Falla detectada...">
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">Mano de Obra ($):</label>
+                                    <input type="number" class="dark-input" id="mo-${cita.idCita}" placeholder="0.00">
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">Refacciones ($):</label>
+                                    <input type="number" class="dark-input" id="ref-${cita.idCita}" placeholder="0.00">
+                                </div>
+                                <button class="action-btn" style="background-color: #27ae60; color:white;" onclick="enviarCotizacion('${cita.idCita}')">
+                                    Enviar Cotización
+                                </button>
+                            </div>
+                        `;
+                    } else {
+                        actionArea = `
+                            <div style="margin-top:15px; text-align:center; color:#2ecc71;">
+                                <i class="fas fa-check-circle"></i> ${cita.estado}
+                            </div>
+                        `;
+                    }
+
+                    // Formatear fecha
+                    const fecha = new Date(cita.fechaHora).toLocaleString();
+
+                    card.innerHTML = `
+                        <div class="job-header">
+                            <h3>${cita.marca} ${cita.modelo || ''}</h3>
+                            <span class="status-badge ${cita.estado === 'Pendiente' ? 'status-pending' : 'status-completed'}">
+                                ${cita.estado}
+                            </span>
+                        </div>
+                        <div class="job-details">
+                            <p><i class="fas fa-hashtag"></i> Placa: <strong>${cita.placa}</strong></p>
+                            <p><i class="fas fa-user"></i> Cliente: ${cita.clienteNombre}</p>
+                            <p><i class="fas fa-clock"></i> Cita: ${fecha}</p>
+                        </div>
+                        ${actionArea}
+                    `;
+                    container.appendChild(card);
+                });
+
+            } catch (error) {
+                console.error(error);
+                container.innerHTML = '<p style="color:red; text-align:center;">Error cargando datos.</p>';
+            }
+        }
+
+        // --- FUNCIONES UI ---
+
+        window.openNewJobModal = () => document.getElementById('new-job-modal').style.display = 'block';
+        window.closeNewJobModal = () => document.getElementById('new-job-modal').style.display = 'none';
+
+        // Cerrar modal con click afuera
+        window.onclick = (event) => {
+            const modal = document.getElementById('new-job-modal');
+            if (event.target == modal) modal.style.display = "none";
+        };
+
+        window.toggleForm = (id) => {
+            const form = document.getElementById(`form-${id}`);
+            // Toggle
+            if (form.style.display === 'block') {
+                form.style.display = 'none';
+            } else {
+                // Hide others? No, allow multiple open
+                form.style.display = 'block';
+            }
+        }
+
+        window.fillServiceInfo = (select, idCita) => {
+            const option = select.options[select.selectedIndex];
+            if (!option.value) return; // Reset?
+
+            const precio = option.getAttribute('data-price');
+            const desc = option.getAttribute('data-desc'); // Could be name if desc is empty
+
+            // Auto-fill
+            document.getElementById(`mo-${idCita}`).value = precio;
+
+            // Append to diagnosis or replace? Let's append if not empty
+            const diagInput = document.getElementById(`diag-${idCita}`);
+            const serviceName = option.text.split(' - $')[0];
+
+            if (diagInput.value) {
+                diagInput.value += ` + ${serviceName}`;
+            } else {
+                diagInput.value = serviceName;
+            }
+        };
+
+        window.enviarCotizacion = async (idCita) => {
+            const diag = document.getElementById(`diag-${idCita}`).value;
+            const mo = document.getElementById(`mo-${idCita}`).value;
+            const ref = document.getElementById(`ref-${idCita}`).value || 0;
+
+            if (!diag || !mo) return alert("Por favor completa el diagnóstico y mano de obra.");
+
+            try {
+                const res = await fetch('/api/mecanico/cotizar', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        idCita,
+                        diagnostico: diag,
+                        manoObra: mo,
+                        refacciones: ref
+                    })
+                });
+                const data = await res.json();
+                if (data.success) {
+                    alert("Cotización enviada");
+                    cargarCitas(); // Reload
+                } else {
+                    alert("Error: " + data.error);
+                }
+            } catch (e) { console.error(e); alert("Error de red"); }
+        }
+
+        async function handleExpressSubmit(e) {
+            e.preventDefault();
+            const btn = e.target.querySelector('button');
+            const originalText = btn.innerText;
+            btn.innerText = "Procesando...";
+            btn.disabled = true;
+
+            const data = {
+                nombreCliente: document.getElementById('new-nombre').value,
+                telefonoCliente: document.getElementById('new-telefono').value,
+                placa: document.getElementById('new-placa').value,
+                marca: document.getElementById('new-marca').value,
+                modelo: document.getElementById('new-modelo').value,
+            };
+
+            try {
+                const res = await fetch('/api/mecanico/crear-orden-express', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+                const result = await res.json();
+
+                if (result.success) {
+                    alert("Trabajo creado exitosamente.");
+                    closeNewJobModal();
+                    document.getElementById('express-form').reset();
+                    cargarCitas();
+                } else {
+                    alert("Error: " + (result.error || result.mensaje));
+                }
+            } catch (err) {
+                console.error(err);
+                alert("Error de conexión");
+            } finally {
+                btn.innerText = originalText;
+                btn.disabled = false;
+            }
+        }
+    </script>
+</body>
+
+</html>
