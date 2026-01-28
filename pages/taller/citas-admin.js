@@ -12,6 +12,12 @@ async function cargarCitas() {
     try {
         const response = await fetch('/api/taller/citas');
 
+        if (response.status === 401) {
+            alert('Tu sesión ha expirado. Por favor inicia sesión nuevamente.');
+            window.location.href = '/login_taller.html';
+            return;
+        }
+
         if (!response.ok) {
             throw new Error('Error al cargar citas');
         }
@@ -55,6 +61,11 @@ function mostrarCitas(citas) {
                     <button class="btn-cambiar-mecanico" onclick="cambiarMecanico('${cita.idCita}')">
                         <i class="fas fa-save"></i> Guardar
                     </button>
+                    ${(cita.estado !== 'Completado' && cita.estado !== 'Cancelado') ?
+                `<button class="btn-completar" onclick="completarCita('${cita.idCita}')" style="background-color: #2ecc71; margin-top: 5px;">
+                            <i class="fas fa-check"></i> Completar
+                        </button>` : ''
+            }
                 </td>
             </tr>
         `;
@@ -67,6 +78,12 @@ let mecanicosDisponibles = [];
 async function cargarMecanicos() {
     try {
         const response = await fetch('/api/taller/mecanicos');
+
+        if (response.status === 401) {
+            // No alertamos aquí para no spammear si se llama junto con otras funciones
+            console.warn('Sesión expirada al cargar mecánicos');
+            return;
+        }
 
         if (!response.ok) {
             throw new Error('Error al cargar mecánicos');
@@ -109,6 +126,12 @@ async function cambiarMecanico(idCita) {
             body: JSON.stringify({ idMecanico: nuevoMecanico })
         });
 
+        if (response.status === 401) {
+            alert('Tu sesión ha expirado. Por favor inicia sesión nuevamente.');
+            window.location.href = '/login_taller.html';
+            return;
+        }
+
         const result = await response.json();
 
         if (response.ok) {
@@ -128,6 +151,11 @@ async function cambiarMecanico(idCita) {
 async function cargarCitasHoy() {
     try {
         const response = await fetch('/api/taller/citas-hoy');
+
+        if (response.status === 401) {
+            // Si carga en dashboard, quizás redirigir
+            return;
+        }
 
         if (!response.ok) {
             throw new Error('Error al cargar citas de hoy');
@@ -161,6 +189,41 @@ async function cargarCitasHoy() {
 
     } catch (error) {
         console.error('Error:', error);
+    }
+}
+
+// Completar cita
+async function completarCita(idCita) {
+    if (!confirm('¿Marcar esta cita como completada?')) {
+        return;
+    }
+
+    try {
+        const response = await fetch(`/api/taller/citas/${idCita}/completar`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        });
+
+        if (response.status === 401) {
+            alert('Tu sesión ha expirado. Por favor inicia sesión nuevamente.');
+            window.location.href = '/login_taller.html';
+            return;
+        }
+
+        const result = await response.json();
+
+        if (response.ok) {
+            alert(result.mensaje || 'Cita completada exitosamente');
+            cargarCitas(); // Recargar la lista
+        } else {
+            alert(result.error || 'Error al completar la cita');
+        }
+
+    } catch (error) {
+        console.error('Error:', error);
+        alert('Error al completar la cita');
     }
 }
 

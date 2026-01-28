@@ -345,13 +345,13 @@
                         });
 
                         actionArea = `
-                            <button class="action-btn" onclick="toggleForm(${cita.idCita})">
+                            <button class="action-btn" onclick="toggleForm('${cita.idCita}')">
                                 <i class="fas fa-wrench"></i> Diagnosticar / Cotizar
                             </button>
                             <div id="form-${cita.idCita}" class="quote-form">
                                 <div class="form-group">
                                     <label class="form-label">Cargar Servicio Predefinido:</label>
-                                    <select class="dark-input" onchange="fillServiceInfo(this, ${cita.idCita})">
+                                    <select class="dark-input" onchange="fillServiceInfo(this, '${cita.idCita}')">
                                         ${options}
                                     </select>
                                 </div>

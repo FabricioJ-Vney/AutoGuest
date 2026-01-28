@@ -481,9 +481,8 @@
                             chatModal.classList.add('active');
                             break;
                         case 'cancelarCitaTaller':
-                            if (confirm('¿Estás seguro de que quieres cancelar?')) {
-                                // Aquí iría la lógica de cancelación real (PUT /api/citas/:id/estado)
-                                alert('Funcionalidad de cancelación en desarrollo.');
+                            if (confirm('¿Estás seguro de que quieres cancelar esta cita? Esta acción no se puede deshacer.')) {
+                                cancelarCita(idCita);
                             }
                             break;
                         case 'reservarDeNuevo':
@@ -514,6 +513,27 @@
                     chatMessages.scrollTop = chatMessages.scrollHeight;
                 }
             });
+
+            // Función para cancelar cita
+            async function cancelarCita(idCita) {
+                try {
+                    const response = await fetch(`/api/citas/${idCita}`, {
+                        method: 'DELETE'
+                    });
+
+                    const result = await response.json();
+
+                    if (response.ok) {
+                        alert(result.message || 'Cita cancelada exitosamente');
+                        window.location.href = 'mis_citas.html';
+                    } else {
+                        alert(result.error || 'Error al cancelar la cita');
+                    }
+                } catch (error) {
+                    console.error('Error:', error);
+                    alert('Error de conexión al cancelar la cita');
+                }
+            }
         });
 
         let mp; // Declarar mp en un alcance más alto

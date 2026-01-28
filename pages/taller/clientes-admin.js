@@ -9,6 +9,12 @@ async function cargarClientes() {
     try {
         const response = await fetch('/api/taller/clientes');
 
+        if (response.status === 401) {
+            alert('Tu sesión ha expirado. Por favor inicia sesión nuevamente.');
+            window.location.href = '/login_taller.html';
+            return;
+        }
+
         if (!response.ok) {
             throw new Error('Error al cargar clientes');
         }

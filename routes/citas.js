@@ -25,19 +25,36 @@ router.post('/', isAuthenticated, async (req, res) => {
             return res.status(400).json({ error: 'No se puede agendar una cita en el pasado.' });
         }
 
-        // 1. Asignar un mecánico aleatorio de ese taller (Simulación de asignación automática)
+        // 0. VERIFICAR QUE EL USUARIO EXISTA EN LA TABLA CLIENTE (Evitar Error FK)
+        const [clienteExists] = await db.query('SELECT idUsuario FROM cliente WHERE idUsuario = ?', [idCliente]);
+        if (clienteExists.length === 0) {
+            // Si no existe, lo insertamos automáticamente
+            console.log(`Usuario ${idCliente} no estaba en tabla cliente. Insertando...`);
+            await db.query('INSERT INTO cliente (idUsuario) VALUES (?)', [idCliente]);
+        }
+
+        // 1. Asignar un mecánico aleatorio de ese taller
         const [mecanicos] = await db.query('SELECT idUsuario FROM mecanico WHERE idTaller = ?', [idTaller]);
 
         let idMecanico = null;
         if (mecanicos.length > 0) {
-            // Escoge uno al azar
             const random = Math.floor(Math.random() * mecanicos.length);
             idMecanico = mecanicos[random].idUsuario;
+        } else {
+            // Si no hay mecánicos, intentar asignar al administrador o dejar NULL pero advertir
+            console.warn("No hay mecánicos en el taller " + idTaller);
+            // Opcional: Podrías asignar un mecánico "default" si tu lógica de negocio lo requiere
+        }
+
+        if (!idMecanico) {
+            // Si no hay mecánico, la cita no se verá en el panel de taller actual (que filtra por mecánico)
+            // ERROR CRÍTICO: Si idMecanico es NULL, la cita queda huérfana de taller en la BD actual.
+            return res.status(400).json({ error: 'El taller no tiene personal disponible para recibir citas online en este momento.' });
         }
 
         // 2. Crear ID de cita
         const idCita = 'CIT' + nanoid(5);
-        const fechaHora = `${fecha} ${hora}:00`; // Formato SQL
+        const fechaHora = `${fecha} ${hora}:00`;
 
         // 3. Insertar
         await db.query(
@@ -159,6 +176,37 @@ router.put('/:id/estado', async (req, res) => {
     } catch (error) {
         console.error(error);
         res.status(500).json({ error: 'Error al actualizar estado' });
+    }
+});
+
+// Cancelar cita (cliente)
+router.delete('/:id', isAuthenticated, async (req, res) => {
+    const { id } = req.params;
+    const idCliente = req.session.userId;
+
+    try {
+        // Verificar que la cita pertenece al cliente
+        const [cita] = await db.query(
+            'SELECT estado FROM cita WHERE idCita = ? AND idCliente = ?',
+            [id, idCliente]
+        );
+
+        if (cita.length === 0) {
+            return res.status(404).json({ error: 'Cita no encontrada o no tienes permiso para cancelarla' });
+        }
+
+        // Validar que no esté completada
+        if (cita[0].estado === 'Completado') {
+            return res.status(400).json({ error: 'No se puede cancelar una cita ya completada' });
+        }
+
+        // Actualizar estado a Cancelado
+        await db.query('UPDATE cita SET estado = ? WHERE idCita = ?', ['Cancelado', id]);
+
+        res.json({ success: true, message: 'Cita cancelada exitosamente' });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: 'Error al cancelar la cita' });
     }
 });
 

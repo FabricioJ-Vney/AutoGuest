@@ -34,7 +34,10 @@ app.use(session({
     secret: process.env.SESSION_SECRET,
     resave: false,
     saveUninitialized: true,
-    cookie: { secure: false } // Poner en true si usas HTTPS
+    cookie: {
+        secure: false, // Poner en true si usas HTTPS
+        maxAge: 24 * 60 * 60 * 1000 // 24 horas
+    }
 }));
 
 // Servir archivos estáticos (nuestros archivos HTML, CSS, JS del frontend)
@@ -72,51 +75,6 @@ app.use('/api/taller/servicios', tallerServiciosRoutes);
 // 5. Rutas
 app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'index.html'));
-});
-
-// Ruta para EDITAR (PUT)
-app.put('/api/taller/servicios/:id', (req, res) => {
-    const id = req.params.id;
-    const { nombre, descripcion, precio } = req.body;
-
-    const sql = "UPDATE servicios SET nombre = ?, descripcion = ?, precio = ? WHERE id = ?";
-    
-    db.query(sql, [nombre, descripcion, precio, id], (err, result) => {
-        if (err) {
-            console.error(err);
-            // IMPORTANTE: Responder con error si falla
-            return res.status(500).json({ error: "Error al actualizar en BD" });
-        }
-
-        // 🚨 AQUÍ ES DONDE SUELE FALTAR EL CÓDIGO 🚨
-        // Si no pones esta línea, el botón se queda "Procesando..." para siempre
-        res.json({ message: "Servicio actualizado correctamente", success: true });
-    });
-});
-// CÓDIGO TEMPORAL PARA OBTENER HASH
-const bcrypt = require('bcryptjs');
-bcrypt.hash('12345', 10, function (err, hash) {
-    console.log("---------------------------------------------------");
-    console.log("COPIA ESTE CÓDIGO Y PÉGALO EN TU BASE DE DATOS:");
-    console.log(hash);
-    console.log("---------------------------------------------------");
-});
-
-// Ruta para CREAR (POST)
-app.post('/api/taller/servicios', (req, res) => {
-    const { nombre, descripcion, precio } = req.body;
-
-    const sql = "INSERT INTO servicios (nombre, descripcion, precio) VALUES (?, ?, ?)";
-    
-    db.query(sql, [nombre, descripcion, precio], (err, result) => {
-        if (err) {
-            console.error(err);
-            return res.status(500).json({ error: "Error al insertar en BD" });
-        }
-
-        // IMPORTANTE: Responder al finalizar
-        res.json({ message: "Servicio creado correctamente", id: result.insertId });
-    });
 });
 // 6. Iniciar el servidor
 const PORT = process.env.PORT || 3000;

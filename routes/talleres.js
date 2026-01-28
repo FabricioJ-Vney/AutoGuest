@@ -24,8 +24,8 @@ router.get('/:id', async (req, res) => {
         const [taller] = await db.query('SELECT * FROM taller WHERE idTaller = ?', [id]);
         if (taller.length === 0) return res.status(404).json({ message: 'Taller no encontrado' });
 
-        // B) Servicios (Items marcados como esParaServicio = 1)
-        const [servicios] = await db.query('SELECT * FROM iteminventario WHERE idTaller = ? AND esParaServicio = 1', [id]);
+        // B) Servicios (Tabla servicio)
+        const [servicios] = await db.query('SELECT * FROM servicio WHERE idTaller = ?', [id]);
 
         // C) Productos (Para saber si mostrar botón de catálogo)
         const [productos] = await db.query('SELECT count(*) as total FROM iteminventario WHERE idTaller = ? AND esParaVenta = 1', [id]);
@@ -58,8 +58,8 @@ router.post('/:id/resenas', async (req, res) => {
     const { idUsuario, calificacion, comentario } = req.body;
 
     try {
-        await db.query('INSERT INTO resenas (idTaller, idUsuario, calificacion, comentario) VALUES (?, ?, ?, ?)', 
-        [idTaller, idUsuario, calificacion, comentario]);
+        await db.query('INSERT INTO resenas (idTaller, idUsuario, calificacion, comentario) VALUES (?, ?, ?, ?)',
+            [idTaller, idUsuario, calificacion, comentario]);
         res.json({ success: true, message: 'Reseña guardada' });
     } catch (error) {
         res.status(500).json({ error: 'No se pudo guardar la reseña' });

@@ -38,8 +38,8 @@ router.get('/citas-hoy', isAuthenticated, async (req, res) => {
             JOIN cliente cl ON c.idCliente = cl.idUsuario
             JOIN usuario u ON cl.idUsuario = u.idUsuario
             JOIN vehiculo v ON c.idVehiculo = v.idVehiculo
-            JOIN mecanico mec ON c.idMecanico = mec.idUsuario
-            JOIN usuario m ON mec.idUsuario = m.idUsuario
+            LEFT JOIN mecanico mec ON c.idMecanico = mec.idUsuario
+            LEFT JOIN usuario m ON mec.idUsuario = m.idUsuario
             WHERE mec.idTaller = ?
               AND DATE(c.fechaHora) = CURDATE()
             ORDER BY c.fechaHora ASC
@@ -81,8 +81,8 @@ router.get('/citas', isAuthenticated, async (req, res) => {
             JOIN cliente cl ON c.idCliente = cl.idUsuario
             JOIN usuario u ON cl.idUsuario = u.idUsuario
             JOIN vehiculo v ON c.idVehiculo = v.idVehiculo
-            JOIN mecanico mec ON c.idMecanico = mec.idUsuario
-            JOIN usuario m ON mec.idUsuario = m.idUsuario
+            LEFT JOIN mecanico mec ON c.idMecanico = mec.idUsuario
+            LEFT JOIN usuario m ON mec.idUsuario = m.idUsuario
             WHERE mec.idTaller = ?
             ORDER BY c.fechaHora DESC
         `, [idTaller]);
@@ -177,6 +177,59 @@ router.put('/citas/:id/mecanico', isAuthenticated, async (req, res) => {
     } catch (error) {
         console.error('Error al cambiar mecánico:', error);
         res.status(500).json({ error: 'Error al cambiar mecánico' });
+    }
+});
+
+// @route   PUT /api/taller/citas/:id/completar
+// @desc    Marcar cita como completada
+// @access  Private (Admin)
+router.put('/citas/:id/completar', isAuthenticated, async (req, res) => {
+    const { id } = req.params;
+
+    try {
+        // Obtener idTaller del administrador
+        const [admin] = await db.query(
+            'SELECT idTaller FROM administrador WHERE idUsuario = ?',
+            [req.session.userId]
+        );
+
+        if (!admin || admin.length === 0) {
+            return res.status(404).json({ error: 'Taller no encontrado' });
+        }
+
+        const idTaller = admin[0].idTaller;
+
+        // Verificar que la cita pertenece al taller y obtener estado actual
+        const [cita] = await db.query(`
+            SELECT c.estado
+            FROM cita c
+            JOIN mecanico m ON c.idMecanico = m.idUsuario
+            WHERE c.idCita = ? AND m.idTaller = ?
+        `, [id, idTaller]);
+
+        if (!cita || cita.length === 0) {
+            return res.status(404).json({ error: 'Cita no encontrada o no pertenece a este taller' });
+        }
+
+        // Validar que no esté cancelada
+        if (cita[0].estado === 'Cancelado') {
+            return res.status(400).json({ error: 'No se puede completar una cita cancelada' });
+        }
+
+        // Actualizar estado a Completado
+        await db.query(
+            'UPDATE cita SET estado = ? WHERE idCita = ?',
+            ['Completado', id]
+        );
+
+        res.json({
+            success: true,
+            mensaje: 'Cita marcada como completada exitosamente'
+        });
+
+    } catch (error) {
+        console.error('Error al completar cita:', error);
+        res.status(500).json({ error: 'Error al completar la cita' });
     }
 });
 

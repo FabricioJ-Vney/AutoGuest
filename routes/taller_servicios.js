@@ -55,6 +55,26 @@ router.post('/', isTaller, async (req, res) => {
     }
 });
 
+// 2.5 EDITAR SERVICIO
+router.put('/:id', isTaller, async (req, res) => {
+    const { nombre, descripcion, precio } = req.body;
+    const idServicio = req.params.id;
+    const idTaller = req.session.tallerId;
+
+    if (!nombre || !precio) return res.status(400).json({ error: 'Faltan datos' });
+
+    try {
+        await db.query(
+            'UPDATE servicio SET nombre = ?, descripcion = ?, precio = ? WHERE idServicio = ? AND idTaller = ?',
+            [nombre, descripcion, precio, idServicio, idTaller]
+        );
+        res.json({ success: true, message: 'Servicio actualizado correctamente' });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: 'Error al actualizar' });
+    }
+});
+
 // 3. ELIMINAR SERVICIO
 router.delete('/:id', isTaller, async (req, res) => {
     try {
@@ -65,12 +85,4 @@ router.delete('/:id', isTaller, async (req, res) => {
     }
 });
 
-// Archivo de rutas (ej: routes/servicios.js o app.js)
-
-// Fíjate si la ruta incluye "/taller" o no.
-// A veces la ruta es solo '/api/servicios/:id' sin la palabra 'taller'.
-
-router.put('/servicios/:id', (req, res) => {
-    // ... lógica para actualizar en base de datos
-});
 module.exports = router;
