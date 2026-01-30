@@ -317,11 +317,25 @@
 
         // 2. Cargar Citas Asignadas
         async function cargarCitas() {
+            // Reset selection state on reload to avoid ghost data
+            // (Note: defined in global scope above, but good to clear here if we reload)
+            // But be careful, if user is editing one and we auto-reload... 
+            // For now, let's assume manual reload or specific action triggers this.
+
             const container = document.getElementById('listaTrabajos');
             container.innerHTML = '<p style="color: #a0a0a0; grid-column: 1/-1; text-align: center;"><i class="fas fa-spinner fa-spin"></i> Cargando citas...</p>';
 
             try {
                 const res = await fetch('/api/mecanico/mis-citas');
+
+                if (res.status === 401) {
+                    // Silent fail or redirect? Better to warn if user is expecting data.
+                    // But maybe just redirect.
+                    console.warn("Sesión expirada");
+                    // window.location.href = 'index.html'; // Optional: auto redirect on load
+                    return;
+                }
+
                 if (!res.ok) throw new Error('Error al obtener citas');
 
                 const citas = await res.json();
@@ -350,25 +364,30 @@
                             </button>
                             <div id="form-${cita.idCita}" class="quote-form">
                                 <div class="form-group">
-                                    <label class="form-label">Cargar Servicio Predefinido:</label>
-                                    <select class="dark-input" onchange="fillServiceInfo(this, '${cita.idCita}')">
+                                    <label class="form-label">Agregar Servicio:</label>
+                                    <select class="dark-input" id="service-select-${cita.idCita}">
+                                        <option value="">-- Seleccionar Servicio --</option>
                                         ${options}
                                     </select>
+                                    <button class="action-btn" style="margin-top: 10px; background-color: #3498db;" onclick="addServiceToCotizacion('${cita.idCita}')">
+                                        <i class="fas fa-plus"></i> Agregar Servicio
+                                    </button>
                                 </div>
                                 <div class="form-group">
-                                    <label class="form-label">Diagnóstico:</label>
-                                    <input type="text" class="dark-input" id="diag-${cita.idCita}" placeholder="Falla detectada...">
+                                    <label class="form-label">Servicios Seleccionados:</label>
+                                    <div id="services-list-${cita.idCita}" style="background-color: #333; padding: 10px; border-radius: 4px; min-height: 60px; margin-bottom: 10px;">
+                                        <p style="color: #888; margin: 0; text-align: center;">No hay servicios agregados</p>
+                                    </div>
+                                    <div style="text-align: right; padding: 10px; background-color: #444; border-radius: 4px; margin-bottom: 10px;">
+                                        <strong style="color: #f39c12; font-size: 1.2em;">Total: $<span id="total-${cita.idCita}">0.00</span></strong>
+                                    </div>
                                 </div>
                                 <div class="form-group">
-                                    <label class="form-label">Mano de Obra ($):</label>
-                                    <input type="number" class="dark-input" id="mo-${cita.idCita}" placeholder="0.00">
-                                </div>
-                                <div class="form-group">
-                                    <label class="form-label">Refacciones ($):</label>
-                                    <input type="number" class="dark-input" id="ref-${cita.idCita}" placeholder="0.00">
+                                    <label class="form-label">Notas adicionales (opcional):</label>
+                                    <textarea class="dark-input" id="notes-${cita.idCita}" placeholder="Observaciones generales..." rows="2"></textarea>
                                 </div>
                                 <button class="action-btn" style="background-color: #27ae60; color:white;" onclick="enviarCotizacion('${cita.idCita}')">
-                                    Enviar Cotización
+                                    <i class="fas fa-paper-plane"></i> Enviar Cotización
                                 </button>
                             </div>
                         `;
@@ -428,33 +447,95 @@
             }
         }
 
-        window.fillServiceInfo = (select, idCita) => {
+        // Store selected services for each active form (keyed by citation ID)
+        const selectedServices = {};
+
+        window.addServiceToCotizacion = (idCita) => {
+            const select = document.getElementById(`service-select-${idCita}`);
+            const serviceId = select.value;
+
+            if (!serviceId) return alert("Por favor selecciona un servicio");
+
             const option = select.options[select.selectedIndex];
-            if (!option.value) return; // Reset?
+            const precio = parseFloat(option.getAttribute('data-price'));
+            const nombre = option.text.split(' - $')[0];
+            const descripcion = option.getAttribute('data-desc') || nombre;
 
-            const precio = option.getAttribute('data-price');
-            const desc = option.getAttribute('data-desc'); // Could be name if desc is empty
+            // Initialize array if not exists
+            if (!selectedServices[idCita]) {
+                selectedServices[idCita] = [];
+            }
 
-            // Auto-fill
-            document.getElementById(`mo-${idCita}`).value = precio;
+            // check if already added
+            /*
+            if (selectedServices[idCita].some(s => s.id === serviceId)) {
+                return alert("Este servicio ya ha sido agregado");
+            }
+            */
+            // Allow duplicates? Maybe. But usually not for same repair. Let's allow for now as user requested "multiple services".
 
-            // Append to diagnosis or replace? Let's append if not empty
-            const diagInput = document.getElementById(`diag-${idCita}`);
-            const serviceName = option.text.split(' - $')[0];
+            selectedServices[idCita].push({
+                id: serviceId,
+                nombre: nombre,
+                precio: precio,
+                descripcion: descripcion
+            });
 
-            if (diagInput.value) {
-                diagInput.value += ` + ${serviceName}`;
-            } else {
-                diagInput.value = serviceName;
+            renderServicesList(idCita);
+            select.value = ""; // Reset select
+        };
+
+        window.removeService = (idCita, index) => {
+            if (selectedServices[idCita]) {
+                selectedServices[idCita].splice(index, 1);
+                renderServicesList(idCita);
             }
         };
 
-        window.enviarCotizacion = async (idCita) => {
-            const diag = document.getElementById(`diag-${idCita}`).value;
-            const mo = document.getElementById(`mo-${idCita}`).value;
-            const ref = document.getElementById(`ref-${idCita}`).value || 0;
+        function renderServicesList(idCita) {
+            const listContainer = document.getElementById(`services-list-${idCita}`);
+            const totalSpan = document.getElementById(`total-${idCita}`);
+            const services = selectedServices[idCita] || [];
 
-            if (!diag || !mo) return alert("Por favor completa el diagnóstico y mano de obra.");
+            if (services.length === 0) {
+                listContainer.innerHTML = '<p style="color: #888; margin: 0; text-align: center;">No hay servicios agregados</p>';
+                totalSpan.textContent = "0.00";
+                return;
+            }
+
+            let html = '';
+            let total = 0;
+
+            services.forEach((s, index) => {
+                total += s.precio;
+                html += `
+                    <div style="display: flex; justify-content: space-between; align-items: center; background-color: #2c2c2c; padding: 8px; margin-bottom: 5px; border-radius: 4px; border: 1px solid #444;">
+                        <div>
+                            <span style="color: #f39c12; font-weight: bold;">${s.nombre}</span>
+                            <span style="color: #aaa; font-size: 0.9em;"> - $${s.precio}</span>
+                        </div>
+                        <button onclick="removeService('${idCita}', ${index})" style="background: none; border: none; color: #e74c3c; cursor: pointer;">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </div>
+                `;
+            });
+
+            listContainer.innerHTML = html;
+            totalSpan.textContent = total.toFixed(2);
+        }
+
+        window.enviarCotizacion = async (idCita) => {
+            const services = selectedServices[idCita] || [];
+
+            if (services.length === 0) {
+                return alert("Debes agregar al menos un servicio para cotizar.");
+            }
+
+            const notas = document.getElementById(`notes-${idCita}`).value;
+
+            // Extract just the IDs to send
+            const serviciosIds = services.map(s => s.id);
 
             try {
                 const res = await fetch('/api/mecanico/cotizar', {
@@ -462,19 +543,25 @@
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
                         idCita,
-                        diagnostico: diag,
-                        manoObra: mo,
-                        refacciones: ref
+                        servicios: serviciosIds,
+                        notas: notas
                     })
                 });
+
                 const data = await res.json();
+
                 if (data.success) {
-                    alert("Cotización enviada");
+                    alert("Cotización enviada exitosamente");
+                    // Clear local state
+                    delete selectedServices[idCita];
                     cargarCitas(); // Reload
                 } else {
-                    alert("Error: " + data.error);
+                    alert("Error: " + (data.error || data.mensaje));
                 }
-            } catch (e) { console.error(e); alert("Error de red"); }
+            } catch (e) {
+                console.error(e);
+                alert("Error de red al enviar cotización");
+            }
         }
 
         async function handleExpressSubmit(e) {

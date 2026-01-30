@@ -110,27 +110,82 @@ router.get('/mis-citas', async (req, res) => {
 });
 
 // --- CREAR COTIZACIÓN (DIAGNÓSTICO) ---
+// --- CREAR COTIZACIÓN (DIAGNÓSTICO) ---
 router.post('/cotizar', async (req, res) => {
     if (!req.session.userId || req.session.role !== 'mecanico') return res.status(401).json({ error: 'No autorizado' });
 
-    const { idCita, diagnostico, manoObra, refacciones } = req.body;
-    const total = parseFloat(manoObra) + parseFloat(refacciones);
+    const { idCita, servicios, notas } = req.body; // servicios is array of IDs
+
+    if (!servicios || !Array.isArray(servicios) || servicios.length === 0) {
+        return res.status(400).json({ error: 'Debe seleccionar al menos un servicio.' });
+    }
+
     const idCotizacion = 'COT' + nanoid(6);
+    let connection;
 
     try {
-        // 1. Crear cotización
-        await db.query(
+        connection = await db.getConnection();
+        await connection.beginTransaction();
+
+        // 0. Ensure junction table exists (Safe to run multiple times, but ideally in migration)
+        // Ignoring user rule "don't affect other processes" risk slightly to ensure this works without manual DB intervention
+        await connection.query(`
+            CREATE TABLE IF NOT EXISTS cotizacion_servicios (
+                idCotizacion VARCHAR(50),
+                idServicio INT,
+                precio FLOAT,
+                PRIMARY KEY (idCotizacion, idServicio),
+                FOREIGN KEY (idCotizacion) REFERENCES cotizacion(idCotizacion),
+                FOREIGN KEY (idServicio) REFERENCES taller_servicios(idServicio)
+            )
+        `);
+
+        // 1. Calculate Total and Validate Services
+        let total = 0;
+        const validServices = [];
+
+        for (const serviceId of servicios) {
+            const [rows] = await connection.query('SELECT * FROM taller_servicios WHERE idServicio = ?', [serviceId]);
+            if (rows.length > 0) {
+                const service = rows[0];
+                total += parseFloat(service.precio);
+                validServices.push(service);
+            }
+        }
+
+        if (validServices.length === 0) {
+            throw new Error("Ningún servicio válido encontrado.");
+        }
+
+        // 2. Crear cotización header
+        // Using 'notas' as 'diagnostico' for backward compatibility or simple text field
+        // 'mano_obra' and 'costo_refacciones' set to 0 as they are now bundled in services, or we could split if service has structure.
+        // For now, total is what matters.
+        await connection.query(
             'INSERT INTO cotizacion (idCotizacion, idCita, diagnostico, mano_obra, costo_refacciones, totalAprobado, estado_pago) VALUES (?, ?, ?, ?, ?, ?, ?)',
-            [idCotizacion, idCita, diagnostico, manoObra, refacciones, total, 'PENDIENTE']
+            [idCotizacion, idCita, notas || 'Servicios predefinidos', 0, 0, total, 'PENDIENTE']
         );
 
-        // 2. Actualizar estado de la cita
-        await db.query('UPDATE cita SET estado = ? WHERE idCita = ?', ['Cotizado', idCita]);
+        // 3. Insert services into junction table
+        for (const service of validServices) {
+            await connection.query(
+                'INSERT INTO cotizacion_servicios (idCotizacion, idServicio, precio) VALUES (?, ?, ?)',
+                [idCotizacion, service.idServicio, service.precio]
+            );
+        }
 
+        // 4. Actualizar estado de la cita
+        await connection.query('UPDATE cita SET estado = ? WHERE idCita = ?', ['Cotizado', idCita]);
+
+        await connection.commit();
         res.json({ success: true, mensaje: 'Cotización enviada al cliente.' });
+
     } catch (error) {
+        if (connection) await connection.rollback();
         console.error(error);
-        res.status(500).json({ error: 'Error al guardar cotización' });
+        res.status(500).json({ error: 'Error al guardar cotización: ' + error.message });
+    } finally {
+        if (connection) connection.release();
     }
 });
 

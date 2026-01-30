@@ -32,7 +32,7 @@ router.get('/citas-hoy', isAuthenticated, async (req, res) => {
         const [citas] = await db.query(`
             SELECT c.idCita, c.fechaHora, c.estado,
                    u.nombre as clienteNombre,
-                   v.marca, v.placa,
+                   v.marca, v.modelo, v.placa,
                    m.nombre as mecanicoNombre
             FROM cita c
             JOIN cliente cl ON c.idCliente = cl.idUsuario
@@ -74,7 +74,7 @@ router.get('/citas', isAuthenticated, async (req, res) => {
         const [citas] = await db.query(`
             SELECT c.idCita, c.fechaHora, c.estado,
                    u.nombre as clienteNombre,
-                   v.marca, v.placa,
+                   v.marca, v.modelo, v.placa,
                    mec.idUsuario as idMecanico,
                    m.nombre as mecanicoNombre
             FROM cita c
@@ -87,6 +87,7 @@ router.get('/citas', isAuthenticated, async (req, res) => {
             ORDER BY c.fechaHora DESC
         `, [idTaller]);
 
+        console.log(`DEBUG: /api/taller/citas - Found ${citas.length} appointments for workshop ${idTaller}`);
         res.json(citas);
 
     } catch (error) {
