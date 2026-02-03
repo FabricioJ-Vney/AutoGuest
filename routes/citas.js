@@ -33,7 +33,7 @@ router.post('/', isAuthenticated, async (req, res) => {
             await db.query('INSERT INTO cliente (idUsuario) VALUES (?)', [idCliente]);
         }
 
-        // 1. Asignar un mecánico aleatorio de ese taller
+        // 1. Asignar un mecánico aleatorio de ese taller (OPCIONAL)
         const [mecanicos] = await db.query('SELECT idUsuario FROM mecanico WHERE idTaller = ?', [idTaller]);
 
         let idMecanico = null;
@@ -41,25 +41,17 @@ router.post('/', isAuthenticated, async (req, res) => {
             const random = Math.floor(Math.random() * mecanicos.length);
             idMecanico = mecanicos[random].idUsuario;
         } else {
-            // Si no hay mecánicos, intentar asignar al administrador o dejar NULL pero advertir
-            console.warn("No hay mecánicos en el taller " + idTaller);
-            // Opcional: Podrías asignar un mecánico "default" si tu lógica de negocio lo requiere
-        }
-
-        if (!idMecanico) {
-            // Si no hay mecánico, la cita no se verá en el panel de taller actual (que filtra por mecánico)
-            // ERROR CRÍTICO: Si idMecanico es NULL, la cita queda huérfana de taller en la BD actual.
-            return res.status(400).json({ error: 'El taller no tiene personal disponible para recibir citas online en este momento.' });
+            console.warn("No hay mecánicos en el taller " + idTaller + ". Cita quedará pendiente de asignar.");
         }
 
         // 2. Crear ID de cita
         const idCita = 'CIT' + nanoid(5);
         const fechaHora = `${fecha} ${hora}:00`;
 
-        // 3. Insertar
+        // 3. Insertar con idTaller
         await db.query(
-            'INSERT INTO cita (idCita, fechaHora, estado, idCliente, idVehiculo, idMecanico) VALUES (?, ?, ?, ?, ?, ?)',
-            [idCita, fechaHora, 'Pendiente', idCliente, idVehiculo, idMecanico]
+            'INSERT INTO cita (idCita, fechaHora, estado, idCliente, idVehiculo, idMecanico, idTaller) VALUES (?, ?, ?, ?, ?, ?, ?)',
+            [idCita, fechaHora, 'Pendiente', idCliente, idVehiculo, idMecanico, idTaller]
         );
 
         res.json({ success: true, message: 'Cita agendada con éxito', idCita });
@@ -85,9 +77,8 @@ router.get('/taller', async (req, res) => {
             FROM cita c 
             JOIN usuario u ON c.idCliente = u.idUsuario 
             JOIN vehiculo v ON c.idVehiculo = v.idVehiculo 
-            LEFT JOIN mecanico mec ON c.idMecanico = mec.idUsuario
             LEFT JOIN usuario m ON c.idMecanico = m.idUsuario 
-            WHERE mec.idTaller = ?
+            WHERE c.idTaller = ?
             ORDER BY c.fechaHora DESC
         `, [req.session.tallerId]);
         res.json(citas);

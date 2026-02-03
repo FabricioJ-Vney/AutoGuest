@@ -40,7 +40,7 @@ router.get('/citas-hoy', isAuthenticated, async (req, res) => {
             JOIN vehiculo v ON c.idVehiculo = v.idVehiculo
             LEFT JOIN mecanico mec ON c.idMecanico = mec.idUsuario
             LEFT JOIN usuario m ON mec.idUsuario = m.idUsuario
-            WHERE mec.idTaller = ?
+            WHERE c.idTaller = ?
               AND DATE(c.fechaHora) = CURDATE()
             ORDER BY c.fechaHora ASC
         `, [idTaller]);
@@ -83,7 +83,7 @@ router.get('/citas', isAuthenticated, async (req, res) => {
             JOIN vehiculo v ON c.idVehiculo = v.idVehiculo
             LEFT JOIN mecanico mec ON c.idMecanico = mec.idUsuario
             LEFT JOIN usuario m ON mec.idUsuario = m.idUsuario
-            WHERE mec.idTaller = ?
+            WHERE c.idTaller = ?
             ORDER BY c.fechaHora DESC
         `, [idTaller]);
 

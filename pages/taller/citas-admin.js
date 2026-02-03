@@ -92,13 +92,19 @@ async function cargarMecanicos() {
         mecanicosDisponibles = await response.json();
 
         // Actualizar todos los selects de mecánicos
+        // Actualizar todos los selects de mecánicos
         document.querySelectorAll('.select-mecanico').forEach(select => {
             const mecanicoActual = select.dataset.mecanicoActual;
-            select.innerHTML = mecanicosDisponibles.map(mec =>
+
+            let options = `<option value="" ${!mecanicoActual || mecanicoActual === 'null' ? 'selected' : ''}>-- Sin Asignar --</option>`;
+
+            options += mecanicosDisponibles.map(mec =>
                 `<option value="${mec.idUsuario}" ${mec.idUsuario === mecanicoActual ? 'selected' : ''}>
                     ${mec.nombre} - ${mec.especialidad}
                 </option>`
             ).join('');
+
+            select.innerHTML = options;
         });
 
     } catch (error) {
@@ -231,3 +237,56 @@ async function completarCita(idCita) {
 if (window.location.pathname.includes('portal_taller')) {
     cargarCitasHoy();
 }
+
+// --- NUEVA FUNCION: VER DETALLES ---
+window.verDetalles = async (idCita) => {
+    const modal = document.getElementById('detailsModal');
+    if (!modal) return console.error("No se encontró el modal detailsModal");
+
+    try {
+        // Podríamos hacer un fetch específico si no tenemos todos los datos,
+        // pero por ahora intentaremos obtenerlo de la lista si ya la cargamos, 
+        // O mejor, hacemos fetch individual para asegurar datos frescos.
+        const res = await fetch(`/api/taller/citas/${idCita}`);
+        if (!res.ok) throw new Error("Error cargando detalles");
+
+        const cita = await res.json();
+
+        // Llenar datos (ajusta los IDs según tu HTML)
+        if (document.getElementById('modalCliente')) document.getElementById('modalCliente').textContent = cita.clienteNombre;
+        if (document.getElementById('modalClienteEmail')) document.getElementById('modalClienteEmail').textContent = cita.clienteEmail || 'N/A';
+        if (document.getElementById('modalVehiculo')) document.getElementById('modalVehiculo').textContent = `${cita.marca} ${cita.modelo}`;
+        if (document.getElementById('modalPlaca')) document.getElementById('modalPlaca').textContent = cita.placa;
+        if (document.getElementById('modalMecanico')) document.getElementById('modalMecanico').textContent = cita.mecanicoNombre || 'Sin asignar';
+        if (document.getElementById('modalFecha')) document.getElementById('modalFecha').textContent = new Date(cita.fechaHora).toLocaleString();
+        if (document.getElementById('modalEstado')) document.getElementById('modalEstado').textContent = cita.estado;
+
+        modal.style.display = 'flex'; // Mostrar modal (usando flex para centrar según tu CSS)
+        modal.classList.add('active'); // O usar clase active si tu CSS lo requiere
+
+    } catch (e) {
+        console.error(e);
+        alert("No se pudieron cargar los detalles.");
+    }
+};
+
+// Cerrar modal
+const closeModalBtn = document.getElementById('closeModalBtn');
+if (closeModalBtn) {
+    closeModalBtn.addEventListener('click', () => {
+        const modal = document.getElementById('detailsModal');
+        if (modal) {
+            modal.style.display = 'none';
+            modal.classList.remove('active');
+        }
+    });
+}
+
+// Cerrar modal con click afuera
+window.onclick = (event) => {
+    const modal = document.getElementById('detailsModal');
+    if (event.target == modal) {
+        modal.style.display = "none";
+        modal.classList.remove('active');
+    }
+};

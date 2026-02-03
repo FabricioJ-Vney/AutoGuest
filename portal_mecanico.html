@@ -351,7 +351,31 @@
                     card.className = 'job-card';
 
                     let actionArea = '';
-                    if (cita.estado === 'Pendiente' || cita.estado === 'En Progreso') { // Allow diagnosis for created jobs too
+
+                    // CASO 1: Cita Disponible (Sin Mecánico)
+                    if (!cita.idMecanico) {
+                        actionArea = `
+                            <div style="background-color: #333; padding: 10px; border-radius: 6px; text-align: center; margin-bottom: 10px;">
+                                <strong style="color: #f39c12;">DISPONIBLE</strong>
+                            </div>
+                            <button class="action-btn" onclick="tomarCita('${cita.idCita}')" style="background-color: #3498db;">
+                                <i class="fas fa-hand-paper"></i> Tomar Trabajo
+                            </button>
+                        `;
+                    }
+                    // CASO 2: Cita Asignada a Mí - En Proceso (Ya cotizada/aceptada o tomada)
+                    else if (cita.estado === 'En Proceso') {
+                        actionArea = `
+                            <div style="background-color: #34495e; padding: 10px; border-radius: 6px; margin-bottom: 10px;">
+                                <p style="margin:0; color:#bdc3c7; font-size:0.9em;">Trabajo en curso...</p>
+                            </div>
+                            <button class="action-btn" onclick="finalizarCita('${cita.idCita}')" style="background-color: #2ecc71;">
+                                <i class="fas fa-check-flag"></i> Finalizar Trabajo
+                            </button>
+                        `;
+                    }
+                    // CASO 3: Cita Asignada a Mí - Pendiente (Necesita Diagnóstico) 
+                    else if (cita.estado === 'Pendiente') {
                         // Construir opciones del select
                         let options = '<option value="">-- Seleccionar Servicio (Opcional) --</option>';
                         availableServices.forEach(s => {
@@ -603,6 +627,35 @@
                 btn.disabled = false;
             }
         }
+
+        // --- NUEVAS FUNCIONES PARA EL FLUJO ---
+        window.tomarCita = async (idCita) => {
+            if (!confirm('¿Quieres tomar este trabajo?')) return;
+            try {
+                const res = await fetch(`/api/mecanico/tomar-cita/${idCita}`, { method: 'POST' });
+                const result = await res.json();
+                if (result.success) {
+                    alert(result.message);
+                    cargarCitas();
+                } else {
+                    alert(result.error);
+                }
+            } catch (e) { console.error(e); alert('Error de conexión'); }
+        };
+
+        window.finalizarCita = async (idCita) => {
+            if (!confirm('¿El vehículo está listo para entregar? Esto notificará al cliente.')) return;
+            try {
+                const res = await fetch(`/api/mecanico/finalizar-cita/${idCita}`, { method: 'POST' });
+                const result = await res.json();
+                if (result.success) {
+                    alert(result.message);
+                    cargarCitas();
+                } else {
+                    alert(result.error);
+                }
+            } catch (e) { console.error(e); alert('Error de conexión'); }
+        };
     </script>
 </body>
 

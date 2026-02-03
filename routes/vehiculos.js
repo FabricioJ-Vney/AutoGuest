@@ -127,15 +127,19 @@ router.delete('/:idVehiculo', isAuthenticated, async (req, res) => {
     const { idVehiculo } = req.params;
 
     try {
-        // Verificamos que el vehículo que se intenta borrar pertenece al usuario de la sesión.
-        // Esto es una medida de seguridad crucial.
+        // Verificar si existen citas asociadas a este vehículo
+        // En un sistema real, tal vez quieras impedir el borrado si hay citas futuras,
+        // o usar "soft delete". Aquí, para cumplir con el requerimiento del usuario,
+        // eliminaremos las citas asociadas primero (CASCADE manual).
+        await db.query('DELETE FROM cita WHERE idVehiculo = ?', [idVehiculo]);
+
+        // Luego eliminamos el vehículo
         const [result] = await db.query(
             'DELETE FROM vehiculo WHERE idVehiculo = ? AND idDuenio = ?',
             [idVehiculo, idUsuario]
         );
 
         if (result.affectedRows === 0) {
-            // Si no se borró ninguna fila, es porque el vehículo no existe o no pertenece al usuario.
             return res.status(404).json({ mensaje: 'Vehículo no encontrado o no tienes permiso para eliminarlo.' });
         }
 

@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -7,53 +8,229 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
     <link rel="stylesheet" href="../../style.css">
     <style>
-        body { background-color: #202020; }
-        .portal-header { display: flex; justify-content: space-between; align-items: center; padding: 15px 40px; background-color: #1a1a1a; border-bottom: 1px solid #333; }
-        .header-left { display: flex; align-items: center; gap: 25px; }
-        .portal-header .logo { width: 120px; }
-        .back-link { color: #c0c0c0; text-decoration: none; font-size: 15px; display: flex; align-items: center; gap: 8px; transition: color 0.3s ease; }
-        .back-link:hover { color: #f39c12; }
-        .header-right { text-align: right; }
-        .header-right h2 { margin: 0; font-size: 1.2em; color: #ffffff; }
-        .header-right p { margin: 0; font-size: 0.9em; color: #a0a0a0; }
-        
-        .page-container { max-width: 1200px; margin: 40px auto; padding: 0 20px; }
-        .page-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; flex-wrap: wrap; gap: 20px;}
-        .page-title { font-size: 2.2em; color: #ffffff; margin: 0; }
-        .filter-buttons { display: flex; gap: 10px; }
-        .filter-btn { background-color: #3f3f3f; border: 1px solid #555; color: #f0f0f0; padding: 10px 20px; border-radius: 8px; cursor: pointer; transition: all 0.3s ease; }
-        .filter-btn:hover { background-color: #555; }
-        .filter-btn.active { background-color: #f39c12; color: #1a1a1a; border-color: #f39c12; }
+        body {
+            background-color: #202020;
+        }
 
-        .kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 20px; margin-bottom: 30px; }
-        .kpi-card { background-color: #2c2c2c; padding: 25px; border-radius: 12px; }
-        .kpi-card .kpi-title { font-size: 1em; color: #a0a0a0; margin: 0 0 10px 0; }
-        .kpi-card .kpi-value { font-size: 2.2em; color: #ffffff; font-weight: bold; margin: 0; }
+        .portal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 40px;
+            background-color: #1a1a1a;
+            border-bottom: 1px solid #333;
+        }
 
-        .charts-grid { display: grid; grid-template-columns: 2fr 1fr; gap: 30px; align-items: flex-start; }
-        .chart-container { background-color: #2c2c2c; border-radius: 12px; padding: 30px; }
-        .chart-container h3 { font-size: 1.4em; color: #ffffff; margin-top: 0; margin-bottom: 35px; }
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 25px;
+        }
 
-        .bar-chart { display: flex; justify-content: space-around; align-items: flex-end; height: 250px; border-left: 1px solid #555; border-bottom: 1px solid #555; padding-left: 10px; }
-        .bar-wrapper { display: flex; flex-direction: column; align-items: center; gap: 8px; flex: 1; }
-        .bar { background-color: #f39c12; width: 60%; max-width: 40px; border-radius: 4px 4px 0 0; transition: height 0.5s ease-out; }
-        .bar-label { font-size: 0.8em; color: #a0a0a0; }
+        .portal-header .logo {
+            width: 120px;
+        }
 
-        .pie-chart-wrapper { display: flex; flex-direction: column; align-items: center; gap: 25px; }
-        .pie-chart { width: 180px; height: 180px; border-radius: 50%; transition: background 0.5s ease-out; }
-        .pie-legend { list-style: none; padding: 0; width: 100%; }
-        .pie-legend li { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; font-size: 0.9em; }
-        .legend-color { width: 15px; height: 15px; border-radius: 3px; }
+        .back-link {
+            color: #c0c0c0;
+            text-decoration: none;
+            font-size: 15px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: color 0.3s ease;
+        }
+
+        .back-link:hover {
+            color: #f39c12;
+        }
+
+        .header-right {
+            text-align: right;
+        }
+
+        .header-right h2 {
+            margin: 0;
+            font-size: 1.2em;
+            color: #ffffff;
+        }
+
+        .header-right p {
+            margin: 0;
+            font-size: 0.9em;
+            color: #a0a0a0;
+        }
+
+        .page-container {
+            max-width: 1200px;
+            margin: 40px auto;
+            padding: 0 20px;
+        }
+
+        .page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+
+        .page-title {
+            font-size: 2.2em;
+            color: #ffffff;
+            margin: 0;
+        }
+
+        .filter-buttons {
+            display: flex;
+            gap: 10px;
+        }
+
+        .filter-btn {
+            background-color: #3f3f3f;
+            border: 1px solid #555;
+            color: #f0f0f0;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .filter-btn:hover {
+            background-color: #555;
+        }
+
+        .filter-btn.active {
+            background-color: #f39c12;
+            color: #1a1a1a;
+            border-color: #f39c12;
+        }
+
+        .kpi-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .kpi-card {
+            background-color: #2c2c2c;
+            padding: 25px;
+            border-radius: 12px;
+        }
+
+        .kpi-card .kpi-title {
+            font-size: 1em;
+            color: #a0a0a0;
+            margin: 0 0 10px 0;
+        }
+
+        .kpi-card .kpi-value {
+            font-size: 2.2em;
+            color: #ffffff;
+            font-weight: bold;
+            margin: 0;
+        }
+
+        .charts-grid {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 30px;
+            align-items: flex-start;
+        }
+
+        .chart-container {
+            background-color: #2c2c2c;
+            border-radius: 12px;
+            padding: 30px;
+        }
+
+        .chart-container h3 {
+            font-size: 1.4em;
+            color: #ffffff;
+            margin-top: 0;
+            margin-bottom: 35px;
+        }
+
+        .bar-chart {
+            display: flex;
+            justify-content: space-around;
+            align-items: flex-end;
+            height: 250px;
+            border-left: 1px solid #555;
+            border-bottom: 1px solid #555;
+            padding-left: 10px;
+        }
+
+        .bar-wrapper {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+            flex: 1;
+        }
+
+        .bar {
+            background-color: #f39c12;
+            width: 60%;
+            max-width: 40px;
+            border-radius: 4px 4px 0 0;
+            transition: height 0.5s ease-out;
+        }
+
+        .bar-label {
+            font-size: 0.8em;
+            color: #a0a0a0;
+        }
+
+        .pie-chart-wrapper {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 25px;
+        }
+
+        .pie-chart {
+            width: 180px;
+            height: 180px;
+            border-radius: 50%;
+            transition: background 0.5s ease-out;
+        }
+
+        .pie-legend {
+            list-style: none;
+            padding: 0;
+            width: 100%;
+        }
+
+        .pie-legend li {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 8px;
+            font-size: 0.9em;
+        }
+
+        .legend-color {
+            width: 15px;
+            height: 15px;
+            border-radius: 3px;
+        }
 
         @media (max-width: 900px) {
-            .charts-grid { grid-template-columns: 1fr; }
+            .charts-grid {
+                grid-template-columns: 1fr;
+            }
         }
     </style>
 </head>
+
 <body>
     <header class="portal-header">
         <div class="header-left">
-            <a href="../../portal_taller.html"><img src="../../imagenes/Logo_Autoguest.png" alt="Logo de AutoGuest" class="logo"></a>
+            <a href="../../portal_taller.html"><img src="../../imagenes/Logo_Autoguest.png" alt="Logo de AutoGuest"
+                    class="logo"></a>
             <a href="../../portal_taller.html" class="back-link"><i class="fas fa-arrow-left"></i> Volver al Panel</a>
         </div>
         <div class="header-right">
@@ -71,12 +248,30 @@
                 <button class="filter-btn" onclick="updateDashboard('ano', this)">Este Año</button>
             </div>
         </div>
+        <p
+            style="color: #f39c12; background: rgba(243, 156, 18, 0.1); padding: 10px; border-radius: 5px; margin-bottom: 20px;">
+            <i class="fas fa-info-circle"></i> <strong>Nota:</strong> Los datos mostrados a continuación son una
+            simulación para demostración. La integración con datos en tiempo real estará disponible en una próxima
+            actualización.
+        </p>
 
         <section class="kpi-grid">
-            <div class="kpi-card"><p class="kpi-title">Ingresos Totales</p><h3 class="kpi-value" id="kpi-ingresos"></h3></div>
-            <div class="kpi-card"><p class="kpi-title">Servicios Realizados</p><h3 class="kpi-value" id="kpi-servicios"></h3></div>
-            <div class="kpi-card"><p class="kpi-title">Clientes Nuevos</p><h3 class="kpi-value" id="kpi-clientes"></h3></div>
-            <div class="kpi-card"><p class="kpi-title">Valoración Promedio</p><h3 class="kpi-value" id="kpi-valoracion"></h3></div>
+            <div class="kpi-card">
+                <p class="kpi-title">Ingresos Totales</p>
+                <h3 class="kpi-value" id="kpi-ingresos"></h3>
+            </div>
+            <div class="kpi-card">
+                <p class="kpi-title">Servicios Realizados</p>
+                <h3 class="kpi-value" id="kpi-servicios"></h3>
+            </div>
+            <div class="kpi-card">
+                <p class="kpi-title">Clientes Nuevos</p>
+                <h3 class="kpi-value" id="kpi-clientes"></h3>
+            </div>
+            <div class="kpi-card">
+                <p class="kpi-title">Valoración Promedio</p>
+                <h3 class="kpi-value" id="kpi-valoracion"></h3>
+            </div>
         </section>
 
         <section class="charts-grid">
@@ -110,15 +305,15 @@
             // ===== DATOS CORREGIDOS Y AMPLIADOS PARA "AÑO" =====
             ano: {
                 kpis: { ingresos: "$35,600", servicios: "550", clientes: "150", valoracion: "4.8 / 5" },
-                barChart: { 
-                    title: "Ingresos Mensuales del Año", 
-                    labels: ["Ene", "Feb", "Mar", "Abr", "May", "Jun", "Jul", "Ago", "Sep", "Oct", "Nov", "Dic"], 
-                    values: [50, 55, 65, 60, 70, 75, 70, 80, 85, 80, 90, 100] 
+                barChart: {
+                    title: "Ingresos Mensuales del Año",
+                    labels: ["Ene", "Feb", "Mar", "Abr", "May", "Jun", "Jul", "Ago", "Sep", "Oct", "Nov", "Dic"],
+                    values: [50, 55, 65, 60, 70, 75, 70, 80, 85, 80, 90, 100]
                 },
-                pieChart: { 
+                pieChart: {
                     title: "Servicios Populares (Año)",
-                    labels: ["Mantenimiento", "Reparación", "Diagnóstico", "Otros"], 
-                    values: [50, 25, 15, 10] 
+                    labels: ["Mantenimiento", "Reparación", "Diagnóstico", "Otros"],
+                    values: [50, 25, 15, 10]
                 }
             }
         };
@@ -170,4 +365,5 @@
         });
     </script>
 </body>
+
 </html>

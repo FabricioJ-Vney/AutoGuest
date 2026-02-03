@@ -86,26 +86,67 @@ router.post('/login', async (req, res) => {
 });
 
 // --- OBTENER CITAS ASIGNADAS AL MECÁNICO ---
+// --- OBTENER CITAS (ASIGNADAS + DISPONIBLES) ---
 router.get('/mis-citas', async (req, res) => {
     if (!req.session.userId || req.session.role !== 'mecanico') {
         return res.status(401).json({ error: 'No autorizado' });
     }
 
+    const { userId, tallerId } = req.session;
+
     try {
         const [citas] = await db.query(`
-            SELECT c.idCita, c.fechaHora, c.estado, 
+            SELECT c.idCita, c.fechaHora, c.estado, c.idMecanico,
                    v.marca, v.modelo, v.placa, 
                    u.nombre as clienteNombre
             FROM cita c
             JOIN vehiculo v ON c.idVehiculo = v.idVehiculo
             JOIN usuario u ON c.idCliente = u.idUsuario
-            WHERE c.idMecanico = ?
+            WHERE (c.idMecanico = ? AND c.estado != 'Cancelado') 
+               OR (c.idTaller = ? AND c.idMecanico IS NULL AND c.estado = 'Pendiente')
             ORDER BY c.fechaHora ASC
-        `, [req.session.userId]);
+        `, [userId, tallerId]);
 
         res.json(citas);
     } catch (error) {
+        console.error(error);
         res.status(500).json({ error: 'Error al cargar citas' });
+    }
+});
+
+// --- TOMAR UNA CITA (ASIGNARSE A SÍ MISMO) ---
+router.post('/tomar-cita/:id', async (req, res) => {
+    if (!req.session.userId || req.session.role !== 'mecanico') return res.status(401).json({ error: 'No autorizado' });
+
+    const { id } = req.params;
+    const { userId } = req.session;
+
+    try {
+        // Verificar que la cita esté libre
+        const [cita] = await db.query('SELECT idMecanico FROM cita WHERE idCita = ?', [id]);
+        if (cita.length === 0) return res.status(404).json({ error: 'Cita no encontrada.' });
+        if (cita[0].idMecanico) return res.status(400).json({ error: 'Esta cita ya fue tomada por otro mecánico.' });
+
+        await db.query('UPDATE cita SET idMecanico = ?, estado = ? WHERE idCita = ?', [userId, 'En Proceso', id]);
+        res.json({ success: true, message: 'Has tomado la cita. ¡A trabajar!' });
+
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: 'Error al tomar la cita.' });
+    }
+});
+
+// --- FINALIZAR UNA CITA ---
+router.post('/finalizar-cita/:id', async (req, res) => {
+    if (!req.session.userId || req.session.role !== 'mecanico') return res.status(401).json({ error: 'No autorizado' });
+    const { id } = req.params;
+
+    try {
+        await db.query('UPDATE cita SET estado = ? WHERE idCita = ?', ['Completado', id]);
+        res.json({ success: true, message: 'Trabajo finalizado correctamente.' });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: 'Error al finalizar trabajo.' });
     }
 });
 
