@@ -177,7 +177,7 @@ router.post('/cotizar', async (req, res) => {
                 precio FLOAT,
                 PRIMARY KEY (idCotizacion, idServicio),
                 FOREIGN KEY (idCotizacion) REFERENCES cotizacion(idCotizacion),
-                FOREIGN KEY (idServicio) REFERENCES taller_servicios(idServicio)
+                FOREIGN KEY (idServicio) REFERENCES servicio(idServicio)
             )
         `);
 
@@ -186,7 +186,7 @@ router.post('/cotizar', async (req, res) => {
         const validServices = [];
 
         for (const serviceId of servicios) {
-            const [rows] = await connection.query('SELECT * FROM taller_servicios WHERE idServicio = ?', [serviceId]);
+            const [rows] = await connection.query('SELECT * FROM servicio WHERE idServicio = ?', [serviceId]);
             if (rows.length > 0) {
                 const service = rows[0];
                 total += parseFloat(service.precio);
