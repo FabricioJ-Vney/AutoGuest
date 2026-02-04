@@ -43,10 +43,35 @@ router.get('/clientes', isAuthenticated, async (req, res) => {
         `, [idTaller]);
 
         res.json(clientes);
-
     } catch (error) {
         console.error('Error al obtener clientes:', error);
         res.status(500).json({ error: 'Error al obtener clientes' });
+    }
+});
+
+// @route   GET /api/taller/stats
+// @desc    Obtener estadísticas generales del taller (incluyendo contador de mecánicos)
+// @access  Private (Admin)
+router.get('/stats', isAuthenticated, async (req, res) => {
+    try {
+        const [admin] = await db.query('SELECT idTaller FROM administrador WHERE idUsuario = ?', [req.session.userId]);
+        if (!admin || admin.length === 0) return res.status(404).json({ error: 'Taller no encontrado' });
+        const idTaller = admin[0].idTaller;
+
+        const [mecanicos] = await db.query('SELECT COUNT(*) as total FROM mecanico WHERE idTaller = ?', [idTaller]);
+        const [clientes] = await db.query(`
+            SELECT COUNT(DISTINCT c.idCliente) as total 
+            FROM cita c 
+            JOIN mecanico m ON c.idMecanico = m.idUsuario 
+            WHERE m.idTaller = ?`, [idTaller]);
+
+        res.json({
+            mecanicos: mecanicos[0].total,
+            clientes: clientes[0].total
+        });
+    } catch (error) {
+        console.error('Error stats:', error);
+        res.status(500).json({ error: 'Error al obtener estadísticas' });
     }
 });
 
@@ -82,6 +107,27 @@ router.get('/resenas', isAuthenticated, async (req, res) => {
     } catch (error) {
         console.error('Error al obtener reseñas:', error);
         res.status(500).json({ error: 'Error al obtener reseñas' });
+    }
+});
+
+// @route   GET /api/taller/info
+// @desc    Obtener información básica del taller (ID para compartir)
+// @access  Private (Admin)
+router.get('/info', isAuthenticated, async (req, res) => {
+    try {
+        const [admin] = await db.query(`
+            SELECT t.idTaller, t.nombre, t.direccion 
+            FROM administrador a
+            JOIN taller t ON a.idTaller = t.idTaller
+            WHERE a.idUsuario = ?
+        `, [req.session.userId]);
+
+        if (!admin || admin.length === 0) return res.status(404).json({ error: 'Taller no encontrado' });
+
+        res.json(admin[0]);
+    } catch (error) {
+        console.error('Error info:', error);
+        res.status(500).json({ error: 'Error al obtener información' });
     }
 });
 

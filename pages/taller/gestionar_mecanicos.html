@@ -229,6 +229,20 @@
                 <p class="stat-number" id="especialidades-count">0</p>
                 <p class="stat-label">Especialidades</p>
             </div>
+            <!-- Tarjeta de Invitación (ID Taller) -->
+            <div class="stat-card" style="border: 1px solid #f39c12; background: rgba(243, 156, 18, 0.1);">
+                <p class="stat-label" style="color: #f39c12; margin-bottom: 5px;">ID DE TALLER (INVITACIÓN)</p>
+                <div style="display: flex; justify-content: center; align-items: center; gap: 10px;">
+                    <p class="stat-number" id="taller-id-display" style="font-size: 1.8em; margin: 0;">Cargando...</p>
+                    <button onclick="copyToClipboard()"
+                        style="background: none; border: none; color: #fff; cursor: pointer; font-size: 1.2em;"
+                        title="Copiar ID">
+                        <i class="fas fa-copy"></i>
+                    </button>
+                </div>
+                <p class="stat-label" style="font-size: 0.8em; margin-top: 5px;">Comparte este ID con tus mecánicos para
+                    que se registren.</p>
+            </div>
         </div>
 
         <!-- Lista de Mecánicos -->
@@ -244,6 +258,31 @@
     </main>
 
     <script src="mecanicos-admin.js"></script>
+    <script>
+        // Cargar ID del Taller
+        async function loadTallerInfo() {
+            try {
+                const res = await fetch('/api/taller/info');
+                if (res.ok) {
+                    const data = await res.json();
+                    document.getElementById('taller-id-display').textContent = data.idTaller;
+                } else {
+                    document.getElementById('taller-id-display').textContent = "Error";
+                }
+            } catch (error) {
+                console.error("Error loading info", error);
+            }
+        }
+
+        function copyToClipboard() {
+            const idText = document.getElementById('taller-id-display').textContent;
+            navigator.clipboard.writeText(idText).then(() => {
+                alert("ID copiado al portapapeles: " + idText);
+            });
+        }
+
+        document.addEventListener('DOMContentLoaded', loadTallerInfo);
+    </script>
 </body>
 
 </html>

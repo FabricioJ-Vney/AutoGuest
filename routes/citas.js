@@ -108,8 +108,7 @@ router.get('/', isAuthenticated, async (req, res) => {
                    v.marca as vehiculoMarca, v.placa as vehiculoPlaca
             FROM cita c
             JOIN vehiculo v ON c.idVehiculo = v.idVehiculo
-            LEFT JOIN mecanico mec ON c.idMecanico = mec.idUsuario
-            LEFT JOIN taller t ON mec.idTaller = t.idTaller
+            LEFT JOIN taller t ON c.idTaller = t.idTaller
             WHERE c.idCliente = ?
             ORDER BY c.fechaHora DESC
         `, [idCliente]);

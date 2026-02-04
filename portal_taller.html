@@ -170,26 +170,26 @@
         <section class="kpi-grid">
             <div class="kpi-card"><i class="fas fa-calendar-check kpi-icon"></i>
                 <div class="kpi-info">
-                    <h3>8</h3>
+                    <h3 id="citas-hoy-count">0</h3>
                     <p>Citas para Hoy</p>
                 </div>
             </div>
-            <div class="kpi-card"><i class="fas fa-wallet kpi-icon"></i>
+            <div class="kpi-card"><i class="fas fa-users-cog kpi-icon"></i>
                 <div class="kpi-info">
-                    <h3>$2,500</h3>
-                    <p>Ingresos del Mes</p>
+                    <h3 id="mecanicos-count">0</h3>
+                    <p>Mecánicos</p>
                 </div>
             </div>
             <div class="kpi-card"><i class="fas fa-star kpi-icon"></i>
                 <div class="kpi-info">
-                    <h3>4.8</h3>
+                    <h3 id="valoracion-media">--</h3>
                     <p>Valoración Media</p>
                 </div>
             </div>
             <div class="kpi-card"><i class="fas fa-users kpi-icon"></i>
                 <div class="kpi-info">
-                    <h3>12</h3>
-                    <p>Nuevos Clientes (Mes)</p>
+                    <h3 id="clientes-count">0</h3>
+                    <p>Clientes (Total)</p>
                 </div>
             </div>
         </section>
@@ -248,16 +248,33 @@
                 if (titulo) titulo.textContent = userName;
             }
 
-            
+
             // 3. Funcionalidad de Cerrar Sesión
             document.querySelector('.logout-btn').addEventListener('click', (e) => {
                 e.preventDefault();
                 sessionStorage.clear(); // Borrar datos de sesión
                 window.location.href = 'index.html';
             });
+
+            // 4. Cargar Estadísticas
+            async function loadStats() {
+                try {
+                    const res = await fetch('/api/taller/stats');
+                    if (res.ok) {
+                        const data = await res.json();
+                        if (document.getElementById('mecanicos-count'))
+                            document.getElementById('mecanicos-count').textContent = data.mecanicos;
+                        if (document.getElementById('clientes-count'))
+                            document.getElementById('clientes-count').textContent = data.clientes;
+                    }
+                } catch (e) { console.error("Error loading stats", e); }
+            }
+            loadStats();
         });
     </script>
-<script src="pages/taller/citas-admin.js"></script>`n<script src="pages/taller/clientes-admin.js"></script>`n<script src="pages/taller/resenas-admin.js"></script>`n</body>
+    <script src="pages/taller/citas-admin.js"></script>`n
+    <script src="pages/taller/clientes-admin.js"></script>`n
+    <script src="pages/taller/resenas-admin.js"></script>`n
+</body>
 
 </html>
-
