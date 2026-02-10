@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -8,6 +9,7 @@
     <!-- Ruta CSS: Correcta -->
     <link rel="stylesheet" href="style.css">
 </head>
+
 <body>
 
     <div class="form-page-wrapper">
@@ -48,9 +50,9 @@
     </div>
 
     <script>
-        document.getElementById('loginForm').addEventListener('submit', async function(e) {
+        document.getElementById('loginForm').addEventListener('submit', async function (e) {
             e.preventDefault();
-            
+
             const email = document.getElementById('email').value;
             const password = document.getElementById('password').value;
 
@@ -67,10 +69,11 @@
                     // Guardar el estado de la sesión y el nombre del usuario en el navegador
                     sessionStorage.setItem('isLoggedIn', 'true');
                     sessionStorage.setItem('userName', data.userName);
+                    sessionStorage.setItem('userId', data.userId); // Guardar userId para imágenes de perfil
 
                     alert(data.mensaje || '¡Inicio de sesión exitoso!');
                     // Redirigir a la página que indica el servidor
-                    window.location.href = data.redirectTo; 
+                    window.location.href = data.redirectTo;
                 } else {
                     alert('Error: ' + (data.mensaje || 'Credenciales incorrectas.'));
                 }
@@ -83,4 +86,5 @@
         });
     </script>
 </body>
+
 </html>

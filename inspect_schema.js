@@ -1,4 +1,12 @@
-const db = require('./config/database');
+const mysql = require('mysql2/promise');
+require('dotenv').config(); // Load environment variables from .env file
+
+const db = mysql.createPool({
+    host: process.env.DB_HOST || 'localhost',
+    user: process.env.DB_USER || 'root',
+    password: process.env.DB_PASSWORD || '',
+    database: process.env.DB_NAME || 'gestion_taller'
+});
 
 (async () => {
     try {

@@ -18,9 +18,15 @@ const isTaller = (req, res, next) => {
 };
 
 // 1. OBTENER SERVICIOS
-router.get('/', isAuth, async (req, res) => {
+router.get('/servicios', isAuth, async (req, res) => {
     try {
-        const idTaller = req.session.tallerId; // Mecanicos also have tallerId in session
+        console.log('Session in TallerServicios:', req.session); // DEBUG
+        const idTaller = req.session.tallerId;
+
+        if (!idTaller) {
+            console.error('No tallerId in session');
+            // return res.status(400).json({ error: 'No taller ID' }); // Don't break if logic assumes otherwise, but verify.
+        }
 
         const [servicios] = await db.query('SELECT * FROM servicio WHERE idTaller = ?', [idTaller]);
         const [tallerInfo] = await db.query('SELECT nombre FROM taller WHERE idTaller = ?', [idTaller]);
@@ -36,7 +42,7 @@ router.get('/', isAuth, async (req, res) => {
 });
 
 // 2. AGREGAR SERVICIO
-router.post('/', isTaller, async (req, res) => {
+router.post('/servicios', isTaller, async (req, res) => {
     const { nombre, descripcion, precio } = req.body;
     const idTaller = req.session.tallerId;
 
@@ -56,7 +62,7 @@ router.post('/', isTaller, async (req, res) => {
 });
 
 // 2.5 EDITAR SERVICIO
-router.put('/:id', isTaller, async (req, res) => {
+router.put('/servicios/:id', isTaller, async (req, res) => {
     const { nombre, descripcion, precio } = req.body;
     const idServicio = req.params.id;
     const idTaller = req.session.tallerId;
@@ -76,7 +82,7 @@ router.put('/:id', isTaller, async (req, res) => {
 });
 
 // 3. ELIMINAR SERVICIO
-router.delete('/:id', isTaller, async (req, res) => {
+router.delete('/servicios/:id', isTaller, async (req, res) => {
     try {
         await db.query('DELETE FROM servicio WHERE idServicio = ? AND idTaller = ?', [req.params.id, req.session.tallerId]);
         res.json({ success: true });

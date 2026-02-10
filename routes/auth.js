@@ -105,6 +105,7 @@ router.post('/login', async (req, res) => {
             success: true,
             mensaje: 'Inicio de sesión exitoso.',
             userName: user.nombre,
+            userId: user.idUsuario, // Agregar userId para localStorage
             redirectTo: 'pages/cliente/dashboard_cliente.html' // Ajusta la ruta si la moviste a una carpeta
         });
 

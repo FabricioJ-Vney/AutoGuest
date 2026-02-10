@@ -451,10 +451,49 @@
                     actionsHtml += `<button id="cancelarCitaTaller" class="btn btn-danger">Cancelar Cita</button>`;
                     actionsHtml += `<button id="contactarTaller" class="btn btn-secondary">Contactar Taller</button>`;
                 } else if (cita.estado === 'Cotizado') {
-                    actionsHtml += `<button id="pagarCita" class="btn">Pagar Cotización</button>`;
+                    // Mostrar detalles de la cotización
+                    try {
+                        const quoteRes = await fetch(`/api/citas/${idCita}/cotizacion`);
+                        if (quoteRes.ok) {
+                            const quote = await quoteRes.json();
+
+                            // Insertar tarjeta de cotización antes de las acciones
+                            const detailGrid = document.querySelector('.detail-grid');
+                            const quoteCard = document.createElement('div');
+                            quoteCard.className = 'detail-card';
+                            quoteCard.innerHTML = `
+                                <h2><i class="fas fa-file-invoice-dollar" style="color: #f39c12;"></i> Cotización Recibida</h2>
+                                <p style="color: #ccc; margin-bottom: 15px;">${quote.diagnostico || 'Propuesta de trabajo'}</p>
+                                <ul class="info-list">
+                                    ${quote.servicios.map(s => `
+                                        <li>
+                                            <span class="value">${s.nombre}</span>
+                                            <span class="value">$${s.precio.toFixed(2)}</span>
+                                        </li>
+                                    `).join('')}
+                                    <li style="border-top: 2px dashed #444; margin-top: 10px; padding-top: 15px;">
+                                        <span class="label" style="font-size: 1.2em; color: #f39c12;">TOTAL ESTIMADO</span>
+                                        <span class="value" style="font-size: 1.2em; font-weight: bold; color: #f39c12;">$${quote.totalAprobado.toFixed(2)}</span>
+                                    </li>
+                                </ul>
+                            `;
+                            detailGrid.insertBefore(quoteCard, document.getElementById('actionsCard'));
+                        }
+                    } catch (e) { console.error("Error cargando cotización", e); }
+
+                    actionsHtml += `<button id="aprobarCotizacion" class="btn" style="background-color: #2ecc71;">Aprobar Cotización</button>`;
+                    actionsHtml += `<button id="rechazarCotizacion" class="btn btn-secondary" style="background-color: #e74c3c; border-color: #c0392b;">Rechazar Cotización</button>`;
+
+                } else if (cita.estado === 'En Proceso') {
+                    actionsHtml += `<div style="text-align: center; padding: 15px; background: #34495e; border-radius: 8px; width: 100%;">
+                        <i class="fas fa-tools fa-spin" style="font-size: 2em; color: #3498db;"></i>
+                        <p style="margin: 10px 0 0; color: white;">Tu vehículo está siendo reparado.</p>
+                     </div>`;
+                    actionsHtml += `<button id="contactarTaller" class="btn btn-secondary" style="margin-top: 10px;">Contactar Taller</button>`;
+
                 } else if (isCompleted) {
-                    actionsHtml += `<button id="descargarFactura" class="btn">Descargar Factura</button>`;
-                    actionsHtml += `<button id="reservarDeNuevo" class="btn btn-secondary">Reservar de Nuevo</button>`;
+                    actionsHtml += `<button id="pagarCita" class="btn">Pagar Servicio</button>`;
+                    actionsHtml += `<button id="descargarFactura" class="btn btn-secondary">Descargar Nota</button>`;
                 }
 
                 // Contenedores de pago
@@ -467,10 +506,38 @@
                 actionsContainer.innerHTML = actionsHtml;
 
                 // Listeners de Acciones
-                actionsContainer.addEventListener('click', (e) => {
+                actionsContainer.addEventListener('click', async (e) => {
                     const targetId = e.target.id;
                     if (!targetId) return;
                     switch (targetId) {
+                        case 'rechazarCotizacion':
+                            if (confirm("¿Estás seguro de que deseas rechazar la cotización? Esto cancelará la cita.")) {
+                                try {
+                                    const res = await fetch(`/api/citas/${idCita}/rechazar-cotizacion`, { method: 'PUT' });
+                                    const data = await res.json();
+                                    if (data.success) {
+                                        alert(data.message);
+                                        window.location.reload();
+                                    } else {
+                                        alert(data.error);
+                                    }
+                                } catch (err) { alert("Error de conexión"); }
+                            }
+                            break;
+                        case 'aprobarCotizacion':
+                            if (confirm("¿Aprobar presupuesto e iniciar reparación?")) {
+                                try {
+                                    const res = await fetch(`/api/citas/${idCita}/aprobar-cotizacion`, { method: 'PUT' });
+                                    const data = await res.json();
+                                    if (data.success) {
+                                        alert("¡Cotización aprobada! El mecánico ha sido notificado.");
+                                        location.reload();
+                                    } else {
+                                        alert(data.error);
+                                    }
+                                } catch (err) { alert("Error de conexión"); }
+                            }
+                            break;
                         case 'pagarCita':
                             document.getElementById('paypal-button-container').style.display = 'block';
                             e.target.style.display = 'none';

@@ -33,6 +33,30 @@ router.post('/', isAuthenticated, async (req, res) => {
             await db.query('INSERT INTO cliente (idUsuario) VALUES (?)', [idCliente]);
         }
 
+        // NUEVA VALIDACIÓN: Verificar si el vehículo ya tiene una cita activa
+        const [citasActivas] = await db.query(`
+            SELECT c.idCita, c.estado, c.fechaHora, t.nombre as tallerNombre
+            FROM cita c
+            JOIN taller t ON c.idTaller = t.idTaller
+            WHERE c.idVehiculo = ? 
+              AND c.estado IN ('Pendiente', 'Pendiente de Cotización', 'Cotizado', 'En Proceso')
+            ORDER BY c.fechaHora DESC
+            LIMIT 1
+        `, [idVehiculo]);
+
+        if (citasActivas.length > 0) {
+            const citaActiva = citasActivas[0];
+            return res.status(400).json({
+                error: 'Este vehículo ya tiene una cita activa',
+                citaActiva: {
+                    idCita: citaActiva.idCita,
+                    estado: citaActiva.estado,
+                    taller: citaActiva.tallerNombre,
+                    fecha: citaActiva.fechaHora
+                }
+            });
+        }
+
         // 1. Asignar un mecánico aleatorio de ese taller (OPCIONAL)
         const [mecanicos] = await db.query('SELECT idUsuario FROM mecanico WHERE idTaller = ?', [idTaller]);
 
@@ -197,6 +221,116 @@ router.delete('/:id', isAuthenticated, async (req, res) => {
     } catch (error) {
         console.error(error);
         res.status(500).json({ error: 'Error al cancelar la cita' });
+    }
+});
+
+// Aprobar cotización (cliente)
+router.put('/:id/aprobar-cotizacion', isAuthenticated, async (req, res) => {
+    const { id } = req.params;
+    const idCliente = req.session.userId;
+
+    try {
+        // Verificar que la cita pertenece al cliente y está en estado 'Cotizado'
+        const [cita] = await db.query(
+            'SELECT estado FROM cita WHERE idCita = ? AND idCliente = ?',
+            [id, idCliente]
+        );
+
+        if (cita.length === 0) {
+            return res.status(404).json({ error: 'Cita no encontrada o no tienes permiso.' });
+        }
+
+        if (cita[0].estado !== 'Cotizado') {
+            return res.status(400).json({ error: 'La cita no está en estado de cotización.' });
+        }
+
+        let connection;
+        try {
+            connection = await db.getConnection();
+            await connection.beginTransaction();
+
+            // Actualizar estado de cita a 'En Proceso'
+            await connection.query('UPDATE cita SET estado = ? WHERE idCita = ?', ['En Proceso', id]);
+
+            // Actualizar estado de pago en cotización (opcional, para registro)
+            // Asumimos que al aprobar se acepta el compromiso de pago, aunque el pago real es al final o anticipado.
+            // Por ahora solo cambiamos el estado de la cita que es lo que mueve el flujo.
+
+            await connection.commit();
+            res.json({ success: true, message: 'Cotización aprobada. El mecánico comenzará el trabajo pronto.' });
+
+        } catch (error) {
+            if (connection) await connection.rollback();
+            throw error;
+        } finally {
+            if (connection) connection.release();
+        }
+
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: 'Error al aprobar la cotización' });
+    }
+});
+
+// Rechazar cotización (cliente)
+router.put('/:id/rechazar-cotizacion', isAuthenticated, async (req, res) => {
+    const { id } = req.params;
+    const idCliente = req.session.userId;
+
+    try {
+        const [cita] = await db.query(
+            'SELECT estado FROM cita WHERE idCita = ? AND idCliente = ?',
+            [id, idCliente]
+        );
+
+        if (cita.length === 0) return res.status(404).json({ error: 'Cita no encontrada.' });
+        if (cita[0].estado !== 'Cotizado') return res.status(400).json({ error: 'La cita no está en estado cotizado.' });
+
+        // Update to 'Cancelado'
+        await db.query('UPDATE cita SET estado = ? WHERE idCita = ?', ['Cancelado', id]);
+
+        res.json({ success: true, message: 'Cotización rechazada. La cita ha sido cancelada.' });
+
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: 'Error al rechazar cotización' });
+    }
+});
+
+// Obtener cotización de una cita
+router.get('/:id/cotizacion', isAuthenticated, async (req, res) => {
+    const { id } = req.params;
+    const idCliente = req.session.userId;
+
+    try {
+        // Verificar permiso
+        const [cita] = await db.query('SELECT idCita FROM cita WHERE idCita = ? AND idCliente = ?', [id, idCliente]);
+        if (cita.length === 0) return res.status(404).json({ error: 'Cita no encontrada' });
+
+        // Obtener cabecera
+        const [cotizacion] = await db.query('SELECT * FROM cotizacion WHERE idCita = ?', [id]);
+        if (cotizacion.length === 0) return res.status(404).json({ error: 'Cotización no encontrada' });
+
+        const cot = cotizacion[0];
+
+        // Obtener servicios
+        const [servicios] = await db.query(`
+            SELECT s.nombre, cs.precio
+            FROM cotizacion_servicios cs
+            JOIN servicio s ON cs.idServicio = s.idServicio
+            WHERE cs.idCotizacion = ?
+        `, [cot.idCotizacion]);
+
+        res.json({
+            idCotizacion: cot.idCotizacion,
+            diagnostico: cot.diagnostico,
+            totalAprobado: cot.totalAprobado,
+            servicios: servicios
+        });
+
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: 'Error al obtener cotización' });
     }
 });
 

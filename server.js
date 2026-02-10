@@ -70,7 +70,7 @@ app.use('/api/inventario', inventarioRoutes);
 
 app.use('/api/mecanico', mecanicoRoutes);
 app.use('/api/taller/citas', require('./routes/taller_citas'));
-app.use('/api/taller/servicios', tallerServiciosRoutes);
+
 
 // 5. Rutas
 app.get('/', (req, res) => {

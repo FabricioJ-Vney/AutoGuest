@@ -39,7 +39,49 @@
             <div id="cart-total-container">
                 Total: $<span id="cart-total">0.00</span>
             </div>
-            <button id="checkout-button">Finalizar Compra por WhatsApp</button>
+            <button id="checkout-button">Proceder al Pago</button>
+        </div>
+    </div>
+
+    <!-- Modal de Pago -->
+    <div id="payment-modal" class="modal">
+        <div class="modal-content" style="max-width: 500px;">
+            <span class="close-button-payment"
+                style="color: #aaa; float: right; font-size: 28px; font-weight: bold; cursor: pointer;">&times;</span>
+            <h2>Datos de Pago</h2>
+            <p style="margin-bottom: 20px;">Ingresa los datos de tu tarjeta para finalizar la compra.</p>
+
+            <form id="payment-form">
+                <label for="card-name">Nombre en la Tarjeta:</label>
+                <input type="text" id="card-name" required placeholder="Juan Pérez"
+                    style="width: 100%; padding: 10px; margin-bottom: 10px; border: 1px solid #ddd; border-radius: 4px;">
+
+                <label for="card-number">Número de Tarjeta:</label>
+                <input type="text" id="card-number" required placeholder="0000 0000 0000 0000" maxlength="19"
+                    style="width: 100%; padding: 10px; margin-bottom: 10px; border: 1px solid #ddd; border-radius: 4px;">
+
+                <div style="display: flex; gap: 10px;">
+                    <div style="flex: 1;">
+                        <label for="card-expiry">Expiración (MM/YY):</label>
+                        <input type="text" id="card-expiry" required placeholder="MM/YY" maxlength="5"
+                            style="width: 100%; padding: 10px; margin-bottom: 10px; border: 1px solid #ddd; border-radius: 4px;">
+                    </div>
+                    <div style="flex: 1;">
+                        <label for="card-cvv">CVV:</label>
+                        <input type="password" id="card-cvv" required placeholder="123" maxlength="3"
+                            style="width: 100%; padding: 10px; margin-bottom: 10px; border: 1px solid #ddd; border-radius: 4px;">
+                    </div>
+                </div>
+
+                <div
+                    style="background-color: #f9f9f9; padding: 10px; border-radius: 4px; margin-bottom: 20px; font-size: 0.9em; color: #555;">
+                    <p><strong>Total a Pagar:</strong> $<span id="payment-total">0.00</span></p>
+                </div>
+
+                <button type="submit"
+                    style="width: 100%; padding: 12px; background-color: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 16px;">Pagar
+                    y Finalizar</button>
+            </form>
         </div>
     </div>
     <div id="restock-modal" class="modal">

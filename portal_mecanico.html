@@ -286,7 +286,7 @@
     <script>
         let availableServices = [];
 
-        document.addEventListener('DOMContentLoaded', () => {
+        document.addEventListener('DOMContentLoaded', async () => {
             const userName = sessionStorage.getItem('userName');
             if (userName) document.getElementById('mechanicName').textContent = "Mecánico: " + userName;
 
@@ -297,8 +297,8 @@
             });
 
             // Cargar datos reales
-            loadServices();
-            cargarCitas();
+            await loadServices();
+            await cargarCitas();
 
             // Evento Formulario Express
             document.getElementById('express-form').addEventListener('submit', handleExpressSubmit);
@@ -363,18 +363,38 @@
                             </button>
                         `;
                     }
-                    // CASO 2: Cita Asignada a Mí - En Proceso (Ya cotizada/aceptada o tomada)
+                    // CASO 2: Cita Asignada a Mí - En Proceso (YA APROBADA)
                     else if (cita.estado === 'En Proceso') {
                         actionArea = `
                             <div style="background-color: #34495e; padding: 10px; border-radius: 6px; margin-bottom: 10px;">
-                                <p style="margin:0; color:#bdc3c7; font-size:0.9em;">Trabajo en curso...</p>
+                                <p style="margin:0; color:#bdc3c7; font-size:0.9em;">Trabajo Autorizado</p>
                             </div>
                             <button class="action-btn" onclick="finalizarCita('${cita.idCita}')" style="background-color: #2ecc71;">
                                 <i class="fas fa-check-flag"></i> Finalizar Trabajo
                             </button>
                         `;
                     }
-                    // CASO 3: Cita Asignada a Mí - Pendiente (Necesita Diagnóstico) 
+                    // CASO 3: Cita Asignada a Mí - COTIZADO (ESPERANDO APROBACIÓN)
+                    else if (cita.estado === 'Cotizado') {
+                        actionArea = `
+                            <div style="background-color: #e67e22; padding: 15px; border-radius: 6px; text-align: center; margin-bottom: 10px; animation: pulse 2s infinite;">
+                                <i class="fas fa-clock" style="font-size: 1.5em; display: block; margin-bottom: 5px;"></i>
+                                <strong style="color: #fff;">Esperando Aprobación</strong>
+                                <p style="margin: 5px 0 0 0; font-size: 0.8em;">El cliente debe aprobar la cotización.</p>
+                            </div>
+                        `;
+                    }
+                    // CASO 4: Cita Cancelada o Rechazada
+                    else if (cita.estado === 'Cancelado' || cita.estado === 'Rechazado') {
+                        actionArea = `
+                            <div style="background-color: #c0392b; padding: 15px; border-radius: 6px; text-align: center; margin-bottom: 10px;">
+                                <i class="fas fa-ban" style="font-size: 1.5em; display: block; margin-bottom: 5px;"></i>
+                                <strong style="color: #fff;">${cita.estado === 'Rechazado' ? 'Cotización Rechazada' : 'Cita Cancelada'}</strong>
+                                <p style="margin: 5px 0 0 0; font-size: 0.8em;">Este trabajo ya no está disponible.</p>
+                            </div>
+                        `;
+                    }
+                    // CASO 5: Cita Asignada a Mí - Pendiente (Necesita Diagnóstico) 
                     else if (cita.estado === 'Pendiente') {
                         // Construir opciones del select
                         let options = '<option value="">-- Seleccionar Servicio (Opcional) --</option>';

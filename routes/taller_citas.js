@@ -96,6 +96,52 @@ router.get('/citas', isAuthenticated, async (req, res) => {
     }
 });
 
+// @route   GET /api/taller/citas/:id
+// @desc    Obtener detalles de una cita específica
+// @access  Private (Admin)
+router.get('/citas/:id', isAuthenticated, async (req, res) => {
+    const { id } = req.params;
+
+    try {
+        // Obtener idTaller del administrador
+        const [admin] = await db.query(
+            'SELECT idTaller FROM administrador WHERE idUsuario = ?',
+            [req.session.userId]
+        );
+
+        if (!admin || admin.length === 0) {
+            return res.status(404).json({ error: 'Taller no encontrado' });
+        }
+
+        const idTaller = admin[0].idTaller;
+
+        // Obtener detalles de la cita
+        const [cita] = await db.query(`
+            SELECT c.idCita, c.fechaHora, c.estado,
+                   u.nombre as clienteNombre, u.email as clienteEmail,
+                   v.marca, v.modelo, v.placa,
+                   m.nombre as mecanicoNombre
+            FROM cita c
+            JOIN cliente cl ON c.idCliente = cl.idUsuario
+            JOIN usuario u ON cl.idUsuario = u.idUsuario
+            JOIN vehiculo v ON c.idVehiculo = v.idVehiculo
+            LEFT JOIN mecanico mec ON c.idMecanico = mec.idUsuario
+            LEFT JOIN usuario m ON mec.idUsuario = m.idUsuario
+            WHERE c.idCita = ? AND c.idTaller = ?
+        `, [id, idTaller]);
+
+        if (cita.length === 0) {
+            return res.status(404).json({ error: 'Cita no encontrada' });
+        }
+
+        res.json(cita[0]);
+
+    } catch (error) {
+        console.error('Error al obtener detalles de la cita:', error);
+        res.status(500).json({ error: 'Error al obtener detalles' });
+    }
+});
+
 // @route   GET /api/taller/mecanicos
 // @desc    Obtener mecánicos del taller
 // @access  Private (Admin)

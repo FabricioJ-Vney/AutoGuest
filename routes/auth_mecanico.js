@@ -173,7 +173,7 @@ router.post('/cotizar', async (req, res) => {
         await connection.query(`
             CREATE TABLE IF NOT EXISTS cotizacion_servicios (
                 idCotizacion VARCHAR(50),
-                idServicio INT,
+                idServicio VARCHAR(50),
                 precio FLOAT,
                 PRIMARY KEY (idCotizacion, idServicio),
                 FOREIGN KEY (idCotizacion) REFERENCES cotizacion(idCotizacion),

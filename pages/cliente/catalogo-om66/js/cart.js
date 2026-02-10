@@ -131,27 +131,86 @@ function renderCart() {
 /**
  * Finaliza la compra enviando el pedido por WhatsApp y registrándolo en la BD.
  */
-checkoutButton.addEventListener('click', async () => {
+// Elementos del Modal de Pago
+const paymentModal = document.getElementById('payment-modal');
+const closePaymentButton = document.querySelector('.close-button-payment');
+const paymentForm = document.getElementById('payment-form');
+const paymentTotalElement = document.getElementById('payment-total');
+
+// Abrir modal de pago al hacer click en "Proceder al Pago"
+checkoutButton.addEventListener('click', () => {
     if (cart.length === 0) {
         alert('El carrito está vacío. Agrega productos para finalizar la compra.');
         return;
     }
 
+    // Calcular total
+    const total = cart.reduce((acc, item) => acc + (item.price * item.quantity), 0);
+    paymentTotalElement.textContent = total.toFixed(2);
+
+    // Cerrar modal del carrito y abrir modal de pago
+    modal.style.display = 'none';
+    paymentModal.style.display = 'block';
+});
+
+// Cerrar modal de pago
+closePaymentButton.addEventListener('click', () => {
+    paymentModal.style.display = 'none';
+});
+
+// Cerrar modal al hacer click fuera
+window.addEventListener('click', (event) => {
+    if (event.target == paymentModal) {
+        paymentModal.style.display = 'none';
+    }
+    if (event.target == modal) {
+        modal.style.display = 'none';
+    }
+});
+
+// Manejar envío del formulario de pago
+paymentForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+
+    // Simulación de procesamiento de pago
+    const cardName = document.getElementById('card-name').value;
+    const cardNumber = document.getElementById('card-number').value;
+
+    if (cardNumber.length < 16) {
+        alert('Por favor, ingresa un número de tarjeta válido.');
+        return;
+    }
+
+    // Mostrar indicador de carga (opcional)
+    const submitBtn = paymentForm.querySelector('button[type="submit"]');
+    const originalBtnText = submitBtn.textContent;
+    submitBtn.textContent = 'Procesando pago...';
+    submitBtn.disabled = true;
+
+    // Simular retardo de red
+    await new Promise(resolve => setTimeout(resolve, 1500));
+
     // Preparar items para la API
-    // Nota: cart tiene {id, name, price, quantity}. La API espera {idItemInventario, cantidad}
     const apiItems = cart.map(item => ({
         idItemInventario: item.id,
         cantidad: item.quantity
     }));
 
     try {
-        // Enviar pedido al backend para descontar stock
+        // Enviar pedido al backend
         const response = await fetch('/api/pedidos', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
             },
-            body: JSON.stringify({ items: apiItems })
+            body: JSON.stringify({
+                items: apiItems,
+                metodoPago: 'Tarjeta',
+                detallesPago: {
+                    titular: cardName,
+                    ultimosDigitos: cardNumber.slice(-4)
+                }
+            })
         });
 
         const result = await response.json();
@@ -160,39 +219,29 @@ checkoutButton.addEventListener('click', async () => {
             throw new Error(result.mensaje || 'Error al procesar el pedido.');
         }
 
-        // Si el backend procesó bien, procedemos a WhatsApp
-        const phoneNumber = '529991287457';
-        let message = '¡Hola! Quisiera realizar el siguiente pedido:\n\n';
-        let total = 0;
-
-        cart.forEach(item => {
-            const subtotal = item.price * item.quantity;
-            message += `*${item.name}* (x${item.quantity}) - $${subtotal.toFixed(2)}\n`;
-            total += subtotal;
-        });
-
-        message += `\n*Total a pagar: $${total.toFixed(2)}*`;
-        message += `\n(Pedido ID: ${result.idPedido})`; // Incluimos el ID del pedido del backend
-
-        const encodedMessage = encodeURIComponent(message);
-        const whatsappURL = `https://wa.me/${phoneNumber}?text=${encodedMessage}`;
+        alert('¡Pago exitoso! Tu pedido ha sido registrado.');
 
         // Limpiar carrito
         cart = [];
         saveCartToLocalStorage();
         updateCartCount();
         renderCart();
-        modal.style.display = 'none';
 
-        alert('Pedido registrado correctamente. Redirigiendo a WhatsApp...');
-        window.open(whatsappURL, '_blank');
+        paymentModal.style.display = 'none';
+        paymentForm.reset();
 
-        // Recargar la página para actualizar stocks visuales
+        // Abrir la nota/ticket en una nueva pestaña
+        window.open(`/api/pedidos/${result.idPedido}/ticket`, '_blank');
+
+        // Recargar para actualizar stock visual
         location.reload();
 
     } catch (error) {
         console.error('Error:', error);
         alert('Error al procesar el pedido: ' + error.message);
+    } finally {
+        submitBtn.textContent = originalBtnText;
+        submitBtn.disabled = false;
     }
 });
 

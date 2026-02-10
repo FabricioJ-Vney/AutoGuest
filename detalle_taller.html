@@ -291,7 +291,7 @@
             const idTaller = params.get('id');
 
             if (!idTaller) {
-                alert("Error: No se especificó un taller.");
+                alert("Error: No se especificÃ³ un taller.");
                 window.location.href = 'pages/cliente/buscar_talleres.html';
                 return;
             }
@@ -312,7 +312,7 @@
                 const randomImg = `https://source.unsplash.com/800x400/?garage,mechanic&sig=${idTaller.replace(/\\D/g, '')}`;
                 document.getElementById('bannerTaller').style.backgroundImage = `url('${randomImg}')`;
 
-                // Mostrar botón catálogo si tiene productos
+                // Mostrar botÃ³n catÃ¡logo si tiene productos
                 if (data.tieneProductos) {
                     document.getElementById('catalogSection').style.display = 'block';
                 }
@@ -332,15 +332,15 @@
                                 <span class="service-name">${ser.nombre}</span>
                                 <span class="service-price">$${ser.precio}</span>
                             </div>`;
-                        // Opción en el select
+                        // OpciÃ³n en el select
                         selectServicios.innerHTML += `<option value="${ser.idItem}">${ser.nombre} - $${ser.precio}</option>`;
                     });
                 } else {
-                    listaServicios.innerHTML = '<p>Servicios generales bajo cotización.</p>';
-                    selectServicios.innerHTML += '<option value="general">Revisión General (Cotizar)</option>';
+                    listaServicios.innerHTML = '<p>Servicios generales bajo cotizaciÃ³n.</p>';
+                    selectServicios.innerHTML += '<option value="general">RevisiÃ³n General (Cotizar)</option>';
                 }
 
-                // Llenar Reseñas
+                // Llenar ReseÃ±as
                 cargarResenas(data.resenas);
 
             } catch (error) {
@@ -348,7 +348,7 @@
                 document.getElementById('nombreTaller').textContent = "Error al cargar";
             }
 
-            // 3. Cargar Vehículos del Usuario (REAL)
+            // 3. Cargar VehÃ­culos del Usuario (REAL)
             const vehiculoSelect = document.getElementById('vehiculoSelect');
 
             try {
@@ -356,43 +356,43 @@
 
                 if (resVehiculos.status === 401) {
                     // No logueado
-                    vehiculoSelect.innerHTML = '<option value="">Inicia sesión para ver tus autos</option>';
+                    vehiculoSelect.innerHTML = '<option value="">Inicia sesiÃ³n para ver tus autos</option>';
                 } else if (resVehiculos.ok) {
                     const vehiculos = await resVehiculos.json();
 
                     if (vehiculos.length === 0) {
-                        vehiculoSelect.innerHTML = '<option value="">No tienes vehículos registrados</option>';
-                        // Mostrar alerta o botón para agregar
-                        if (confirm("No tienes vehículos registrados. ¿Deseas agregar uno ahora?")) {
+                        vehiculoSelect.innerHTML = '<option value="">No tienes vehÃ­culos registrados</option>';
+                        // Mostrar alerta o botÃ³n para agregar
+                        if (confirm("No tienes vehÃ­culos registrados. Â¿Deseas agregar uno ahora?")) {
                             window.location.href = 'pages/cliente/gestionar_vehiculos.html';
                         }
                     } else {
-                        vehiculoSelect.innerHTML = '<option value="">Selecciona tu Vehículo...</option>';
+                        vehiculoSelect.innerHTML = '<option value="">Selecciona tu VehÃ­culo...</option>';
                         vehiculos.forEach(v => {
                             vehiculoSelect.innerHTML += `<option value="${v.idVehiculo}">${v.marca} ${v.modelo} (${v.placa})</option>`;
                         });
                     }
                 } else {
-                    vehiculoSelect.innerHTML = '<option value="">Error al cargar vehículos</option>';
+                    vehiculoSelect.innerHTML = '<option value="">Error al cargar vehÃ­culos</option>';
                 }
             } catch (error) {
-                console.error("Error cargando vehículos:", error);
-                vehiculoSelect.innerHTML = '<option value="">Error de conexión</option>';
+                console.error("Error cargando vehÃ­culos:", error);
+                vehiculoSelect.innerHTML = '<option value="">Error de conexiÃ³n</option>';
             }
 
-            // 4. Lógica de Cita
+            // 4. LÃ³gica de Cita
             document.getElementById('formCita').addEventListener('submit', async (e) => {
                 e.preventDefault();
 
                 if (!sessionStorage.getItem('isLoggedIn')) {
-                    alert("Debes iniciar sesión para agendar.");
+                    alert("Debes iniciar sesiÃ³n para agendar.");
                     window.location.href = 'login_cliente.html';
                     return;
                 }
 
                 const idVehiculo = document.getElementById('vehiculoSelect').value;
                 if (!idVehiculo) {
-                    alert("Por favor, selecciona un vehículo válido o agrega uno nuevo.");
+                    alert("Por favor, selecciona un vehÃ­culo vÃ¡lido o agrega uno nuevo.");
                     return;
                 }
 
@@ -412,21 +412,38 @@
                     });
 
                     if (res.ok) {
-                        alert("¡Cita agendada con éxito!");
+                        alert("Â¡Cita agendada con Ã©xito!");
                         window.location.href = 'pages/cliente/mis_citas.html';
                     } else {
                         const errorData = await res.json();
-                        alert("Error al guardar la cita: " + (errorData.error || errorData.mensaje || "Error desconocido"));
+
+                        if (res.status === 400 && errorData.citaActiva) {
+                            const ca = errorData.citaActiva;
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Cita Activa Encontrada',
+                                html: `Este vehÃ­culo ya tiene un trabajo en curso en <b>${ca.taller}</b>.<br><br>` +
+                                    `Estado: <b>${ca.estado}</b><br>` +
+                                    `Fecha: <b>${new Date(ca.fecha).toLocaleString()}</b><br><br>` +
+                                    `No puedes agendar el mismo auto en dos talleres simultÃ¡neamente.`,
+                                confirmButtonText: 'Entendido',
+                                background: '#2c2c2c',
+                                color: '#fff',
+                                confirmButtonColor: '#f39c12'
+                            });
+                        } else {
+                            alert("Error al guardar la cita: " + (errorData.error || errorData.mensaje || "Error desconocido"));
+                        }
                     }
                 } catch (err) {
-                    alert("Error de conexión al agendar la cita.");
+                    alert("Error de conexiÃ³n al agendar la cita.");
                 }
             });
 
-            // 5. Lógica de Reseña
+            // 5. LÃ³gica de ReseÃ±a
             document.getElementById('formResena').addEventListener('submit', async (e) => {
                 e.preventDefault();
-                alert("¡Gracias por tu opinión! Se ha guardado correctamente.");
+                alert("Â¡Gracias por tu opiniÃ³n! Se ha guardado correctamente.");
                 location.reload();
             });
         });
@@ -434,12 +451,12 @@
         function cargarResenas(resenas) {
             const div = document.getElementById('listaResenas');
             if (!resenas || resenas.length === 0) {
-                div.innerHTML = '<p style="color:#888">No hay opiniones aún. ¡Sé el primero!</p>';
+                div.innerHTML = '<p style="color:#888">No hay opiniones aÃºn. Â¡SÃ© el primero!</p>';
                 return;
             }
             div.innerHTML = '';
             resenas.forEach(r => {
-                const estrellas = '?'.repeat(r.calificacion) + '?'.repeat(5 - r.calificacion);
+                const estrellas = 'â˜…'.repeat(r.calificacion) + 'â˜†'.repeat(5 - r.calificacion);
                 div.innerHTML += `
                     <div class="review-card">
                         <div class="review-header">
@@ -458,3 +475,9 @@
         }
     </script>
 
+    <!-- SweetAlert2 para mejores mensajes -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+</body>
+
+</html>

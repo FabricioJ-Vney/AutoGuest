@@ -1,6 +1,23 @@
 // Script para gestionar citas del taller
+let allCitas = [];
+let currentFilter = 'Pendiente';
+
 document.addEventListener('DOMContentLoaded', () => {
     console.log('Citas admin loaded');
+
+    // Configurar filtros
+    const filterBtns = document.querySelectorAll('.filter-btn');
+    filterBtns.forEach(btn => {
+        btn.addEventListener('click', () => {
+            // UI Update
+            filterBtns.forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+
+            // Logic Update
+            currentFilter = btn.dataset.filter;
+            aplicarFiltros();
+        });
+    });
 
     // Cargar citas y mecánicos
     cargarCitas();
@@ -22,8 +39,8 @@ async function cargarCitas() {
             throw new Error('Error al cargar citas');
         }
 
-        const citas = await response.json();
-        mostrarCitas(citas);
+        allCitas = await response.json();
+        aplicarFiltros();
 
     } catch (error) {
         console.error('Error:', error);
@@ -31,20 +48,38 @@ async function cargarCitas() {
     }
 }
 
+function aplicarFiltros() {
+    const filtered = allCitas.filter(cita => {
+        const s = cita.estado;
+        if (currentFilter === 'Pendiente') {
+            return ['Pendiente', 'Pendiente de Cotización', 'Cotizado', 'En Proceso'].includes(s);
+        } else if (currentFilter === 'Completado') {
+            return ['Completado', 'Entregado'].includes(s);
+        } else if (currentFilter === 'Cancelada') {
+            return ['Cancelado', 'Rechazado'].includes(s);
+        }
+        return true;
+    });
+    mostrarCitas(filtered);
+}
+
 // Mostrar citas en la tabla
 function mostrarCitas(citas) {
-    const tbody = document.querySelector('#citas-table tbody');
+    const tbody = document.querySelector('#citas-table tbody') || document.querySelector('#appointmentsTableBody'); // Support both IDs
 
     if (!tbody) return;
 
     if (citas.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; color: #888;">No hay citas registradas</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; color: #888;">No hay citas en esta categoría</td></tr>';
         return;
     }
 
     tbody.innerHTML = citas.map(cita => {
         const fecha = new Date(cita.fechaHora).toLocaleDateString('es-ES');
         const hora = new Date(cita.fechaHora).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' });
+
+        // Logic for mechanic select: if manual assignment is needed
+        // Assuming mechanic select population happens via `cargarMecanicos` later
 
         return `
             <tr>
@@ -56,20 +91,26 @@ function mostrarCitas(citas) {
                         <option value="">Cargando...</option>
                     </select>
                 </td>
-                <td><span class="estado-${cita.estado.toLowerCase().replace(/ /g, '-')}">${cita.estado}</span></td>
+                <td><span class="status-badge status-${cita.estado.replace(/\s+/g, '')}">${cita.estado}</span></td>
                 <td>
-                    <button class="btn-cambiar-mecanico" onclick="cambiarMecanico('${cita.idCita}')">
-                        <i class="fas fa-save"></i> Guardar
+                    <button class="btn-cambiar-mecanico" onclick="cambiarMecanico('${cita.idCita}')" title="Guardar Mecánico">
+                        <i class="fas fa-save"></i>
                     </button>
-                    ${(cita.estado !== 'Completado' && cita.estado !== 'Cancelado') ?
-                `<button class="btn-completar" onclick="completarCita('${cita.idCita}')" style="background-color: #2ecc71; margin-top: 5px;">
-                            <i class="fas fa-check"></i> Completar
+                    <button class="btn" onclick="verDetalles('${cita.idCita}')" style="padding: 8px 12px; font-size: 14px;">Detalles</button>
+                    ${(cita.estado !== 'Completado' && cita.estado !== 'Cancelado' && cita.estado !== 'Entregado') ?
+                `<button class="btn-completar" onclick="completarCita('${cita.idCita}')" style="background-color: #2ecc71; margin-left: 5px;" title="Completar">
+                            <i class="fas fa-check"></i>
                         </button>` : ''
             }
                 </td>
             </tr>
         `;
     }).join('');
+
+    // Re-populate mechanics dropdowns for these new rows
+    if (typeof cargarMecanicos === 'function') {
+        cargarMecanicos();
+    }
 }
 
 // Cargar mecánicos disponibles
