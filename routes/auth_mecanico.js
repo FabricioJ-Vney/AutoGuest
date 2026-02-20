@@ -76,7 +76,8 @@ router.post('/login', async (req, res) => {
         res.status(200).json({
             success: true,
             redirectTo: 'portal_mecanico.html',
-            userName: user.nombre
+            userName: user.nombre,
+            userId: user.idUsuario
         });
 
     } catch (error) {

@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -7,6 +8,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
     <link rel="stylesheet" href="style.css">
 </head>
+
 <body>
 
     <div class="form-page-wrapper">
@@ -26,7 +28,7 @@
             <div class="form-container">
                 <h1>Acceso Mecánicos</h1>
                 <p>Ingresa tus credenciales para ver tus citas asignadas.</p>
-                
+
                 <form id="loginMecanicoForm">
                     <div class="form-group">
                         <label for="email">Email del Mecánico</label>
@@ -38,7 +40,7 @@
                     </div>
                     <button type="submit" class="btn">Entrar al Taller</button>
                 </form>
-                
+
                 <div class="extra-link">
                     <p>¿Eres nuevo? <a href="registro_mecanico.html">Regístrate aquí</a></p>
                     <p style="margin-top: 10px;">
@@ -52,7 +54,7 @@
     <script>
         document.getElementById('loginMecanicoForm').addEventListener('submit', async (e) => {
             e.preventDefault();
-            
+
             const email = document.getElementById('email').value;
             const password = document.getElementById('password').value;
             const btn = document.querySelector('button[type="submit"]');
@@ -73,10 +75,13 @@
                 const data = await response.json();
 
                 if (response.ok) {
-                    // Guardar sesión
+                    // Guardar sesión (compatibilidad con portal_mecanico y chat)
                     localStorage.setItem('usuarioNombre', data.userName);
                     localStorage.setItem('usuarioRol', 'mecanico');
-                    
+                    sessionStorage.setItem('userName', data.userName);
+                    sessionStorage.setItem('userId', data.userId || '');
+                    sessionStorage.setItem('userRole', 'mecanico');
+
                     // Redirigir al portal de mecánicos
                     window.location.href = 'portal_mecanico.html';
                 } else {
@@ -93,4 +98,5 @@
         });
     </script>
 </body>
+
 </html>

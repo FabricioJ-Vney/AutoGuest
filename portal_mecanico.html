@@ -210,7 +210,360 @@
             background-color: #2ecc71;
             color: #1a1a1a;
         }
+
+        /* === ESTILOS DEL CHAT (MECÁNICO) === */
+        .chat-trigger-btn {
+            background: linear-gradient(135deg, #3498db, #2980b9);
+            color: #fff;
+            border: none;
+            padding: 9px 16px;
+            border-radius: 6px;
+            width: 100%;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 10px;
+            transition: background 0.3s, transform 0.15s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            font-size: 0.9em;
+        }
+
+        .chat-trigger-btn:hover {
+            background: linear-gradient(135deg, #2980b9, #1a6c9e);
+            transform: translateY(-1px);
+        }
+
+        .chat-unread-badge {
+            background: #e74c3c;
+            color: white;
+            border-radius: 50%;
+            width: 18px;
+            height: 18px;
+            font-size: 0.7em;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+        }
+
+        /* Modal overlay del chat */
+        .chat-modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.75);
+            backdrop-filter: blur(4px);
+            z-index: 2000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .chat-modal-overlay.active {
+            display: flex;
+        }
+
+        .chat-modal-box {
+            background: #1e1e1e;
+            border-radius: 16px;
+            width: 95%;
+            max-width: 480px;
+            height: 85vh;
+            max-height: 660px;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.8);
+        }
+
+        .chat-modal-header {
+            padding: 16px 20px;
+            background: linear-gradient(135deg, #3498db, #2980b9);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .chat-modal-header h3 {
+            margin: 0;
+            color: #fff;
+            font-size: 1em;
+            font-weight: 700;
+        }
+
+        .chat-modal-header p {
+            margin: 2px 0 0;
+            color: #b8d9f0;
+            font-size: 0.8em;
+        }
+
+        .chat-close-btn {
+            background: none;
+            border: none;
+            color: #fff;
+            font-size: 22px;
+            cursor: pointer;
+            line-height: 1;
+        }
+
+        .chat-body {
+            flex: 1;
+            overflow-y: auto;
+            padding: 14px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            background: #141414;
+        }
+
+        .chat-body::-webkit-scrollbar {
+            width: 4px;
+        }
+
+        .chat-body::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        .chat-body::-webkit-scrollbar-thumb {
+            background: #444;
+            border-radius: 2px;
+        }
+
+        .chat-date-sep {
+            text-align: center;
+            font-size: 0.74em;
+            color: #666;
+            margin: 4px 0;
+        }
+
+        .msg-wrap {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .msg-wrap.me {
+            align-items: flex-end;
+        }
+
+        .msg-wrap.them {
+            align-items: flex-start;
+        }
+
+        .msg-sender {
+            font-size: 0.72em;
+            color: #888;
+            margin-bottom: 3px;
+            padding: 0 4px;
+        }
+
+        .msg-bubble {
+            max-width: 76%;
+            padding: 9px 13px;
+            border-radius: 17px;
+            font-size: 0.91em;
+            line-height: 1.44;
+        }
+
+        .msg-bubble.me {
+            background: linear-gradient(135deg, #3498db, #2980b9);
+            color: #fff;
+            border-bottom-right-radius: 4px;
+        }
+
+        .msg-bubble.them {
+            background: #2c2c2c;
+            color: #e0e0e0;
+            border-bottom-left-radius: 4px;
+        }
+
+        .msg-bubble img.chat-img {
+            max-width: 210px;
+            max-height: 210px;
+            border-radius: 10px;
+            display: block;
+            cursor: zoom-in;
+            object-fit: cover;
+        }
+
+        .msg-time {
+            font-size: 0.67em;
+            color: #666;
+            margin-top: 3px;
+            padding: 0 4px;
+        }
+
+        .chat-empty-state {
+            text-align: center;
+            color: #555;
+            padding: 30px 20px;
+        }
+
+        .chat-empty-state i {
+            font-size: 2.5em;
+            display: block;
+            margin-bottom: 10px;
+        }
+
+        .chat-loading-state {
+            text-align: center;
+            color: #666;
+            padding: 20px;
+        }
+
+        /* Input area del chat */
+        .chat-input-wrapper {
+            padding: 12px 14px;
+            border-top: 1px solid #2a2a2a;
+            background: #1e1e1e;
+        }
+
+        .chat-img-preview {
+            display: none;
+            align-items: center;
+            gap: 10px;
+            padding: 8px 10px;
+            background: #2a2a2a;
+            border-radius: 10px;
+            margin-bottom: 8px;
+        }
+
+        .chat-img-preview.show {
+            display: flex;
+        }
+
+        .chat-img-preview img {
+            width: 56px;
+            height: 56px;
+            object-fit: cover;
+            border-radius: 8px;
+        }
+
+        .chat-img-preview-info {
+            flex: 1;
+            overflow: hidden;
+        }
+
+        .chat-img-preview-info p {
+            margin: 0;
+            font-size: 0.8em;
+            color: #ccc;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .chat-img-preview-info span {
+            font-size: 0.72em;
+            color: #888;
+        }
+
+        .remove-preview {
+            background: none;
+            border: none;
+            color: #e74c3c;
+            cursor: pointer;
+            font-size: 1.1em;
+        }
+
+        .chat-input-row {
+            display: flex;
+            gap: 8px;
+            align-items: flex-end;
+        }
+
+        .chat-icon-btn2 {
+            background: none;
+            border: none;
+            color: #888;
+            font-size: 1.2em;
+            cursor: pointer;
+            padding: 8px;
+            border-radius: 50%;
+            transition: color 0.2s, background 0.2s;
+            flex-shrink: 0;
+        }
+
+        .chat-icon-btn2:hover {
+            color: #3498db;
+            background: #2a2a2a;
+        }
+
+        .chat-textarea {
+            flex: 1;
+            padding: 10px 14px;
+            background: #2a2a2a;
+            border: 1px solid #3a3a3a;
+            border-radius: 22px;
+            color: #f0f0f0;
+            font-size: 0.9em;
+            resize: none;
+            max-height: 100px;
+            outline: none;
+            transition: border-color 0.2s;
+            font-family: inherit;
+        }
+
+        .chat-textarea:focus {
+            border-color: #3498db;
+        }
+
+        .chat-send-btn {
+            background: linear-gradient(135deg, #3498db, #2980b9);
+            border: none;
+            color: #fff;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            cursor: pointer;
+            font-size: 1em;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            transition: transform 0.15s, box-shadow 0.15s;
+        }
+
+        .chat-send-btn:hover {
+            transform: scale(1.1);
+            box-shadow: 0 4px 12px rgba(52, 152, 219, 0.4);
+        }
+
+        .chat-send-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        /* Lightbox */
+        .lightbox-overlay {
+            display: none;
+            position: fixed;
+            z-index: 9999;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.93);
+            justify-content: center;
+            align-items: center;
+            cursor: zoom-out;
+        }
+
+        .lightbox-overlay.show {
+            display: flex;
+        }
+
+        .lightbox-overlay img {
+            max-width: 90vw;
+            max-height: 90vh;
+            border-radius: 8px;
+        }
     </style>
+
 </head>
 
 <body>
@@ -459,8 +812,14 @@
                             <p><i class="fas fa-clock"></i> Cita: ${fecha}</p>
                         </div>
                         ${actionArea}
+                        <button class="chat-trigger-btn" onclick="abrirChatCita('${cita.idCita}', '${cita.clienteNombre}')">
+                            <i class="fas fa-comments"></i> Chat con Cliente
+                            <span class="chat-unread-badge" id="badge-${cita.idCita}" style="display:none"></span>
+                        </button>
                     `;
                     container.appendChild(card);
+                    // Verificar mensajes no leídos
+                    verificarNoLeidos(cita.idCita);
                 });
 
             } catch (error) {
@@ -676,7 +1035,270 @@
                 }
             } catch (e) { console.error(e); alert('Error de conexión'); }
         };
+
+        // ========================================================
+        // === SISTEMA DE CHAT DEL MECÁNICO ===
+        // ========================================================
+        let chatActivoIdCita = null;
+        let chatPolling = null;
+        let selectedImg = null;
+
+        // Verificar mensajes no leídos de una cita
+        async function verificarNoLeidos(idCita) {
+            try {
+                const res = await fetch(`/api/chat/${idCita}/no-leidos`);
+                if (!res.ok) return;
+                const data = await res.json();
+                const badge = document.getElementById(`badge-${idCita}`);
+                if (badge) {
+                    if (data.noLeidos > 0) {
+                        badge.textContent = data.noLeidos;
+                        badge.style.display = 'inline-flex';
+                    } else {
+                        badge.style.display = 'none';
+                    }
+                }
+            } catch (e) { /* silencioso */ }
+        }
+
+        // Abrir el chat de una cita específica
+        window.abrirChatCita = function (idCita, clienteNombre) {
+            chatActivoIdCita = idCita;
+            document.getElementById('chatNombreCliente').textContent = clienteNombre;
+            document.getElementById('chatSubtitulo').textContent = `Cita: ${idCita}`;
+            document.getElementById('chatModalOverlay').classList.add('active');
+            cargarMensajes(false);
+            if (chatPolling) clearInterval(chatPolling);
+            chatPolling = setInterval(() => cargarMensajes(true), 5000);
+            // Ocultar badge al abrir
+            const badge = document.getElementById(`badge-${idCita}`);
+            if (badge) badge.style.display = 'none';
+        };
+
+        function cerrarChat() {
+            document.getElementById('chatModalOverlay').classList.remove('active');
+            if (chatPolling) { clearInterval(chatPolling); chatPolling = null; }
+            chatActivoIdCita = null;
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            // Botón cerrar chat
+            document.getElementById('chatCloseBtn').addEventListener('click', cerrarChat);
+            document.getElementById('chatModalOverlay').addEventListener('click', (e) => {
+                if (e.target === document.getElementById('chatModalOverlay')) cerrarChat();
+            });
+
+            // Adjuntar imagen
+            document.getElementById('chatAttachBtn').addEventListener('click', () => {
+                document.getElementById('chatFileInput').click();
+            });
+
+            document.getElementById('chatFileInput').addEventListener('change', (e) => {
+                const file = e.target.files[0];
+                if (!file) return;
+                if (!file.type.startsWith('image/')) { alert('Solo imágenes.'); return; }
+                if (file.size > 5 * 1024 * 1024) { alert('Imagen demasiado grande. Máx 5MB.'); return; }
+                const reader = new FileReader();
+                reader.onload = (ev) => {
+                    selectedImg = { base64: ev.target.result, nombre: file.name, size: (file.size / 1024).toFixed(0) + ' KB' };
+                    document.getElementById('chatImgPreview').src = ev.target.result;
+                    document.getElementById('chatImgNombre').textContent = file.name;
+                    document.getElementById('chatImgSize').textContent = selectedImg.size;
+                    document.getElementById('chatImgPreviewContainer').classList.add('show');
+                    document.getElementById('chatTextarea').placeholder = 'Añade un mensaje (opcional)...';
+                };
+                reader.readAsDataURL(file);
+            });
+
+            document.getElementById('chatRemoveImg').addEventListener('click', limpiarImagen);
+
+            // Enviar
+            document.getElementById('chatSendBtn').addEventListener('click', enviarMensajeChat);
+            document.getElementById('chatTextarea').addEventListener('keydown', (e) => {
+                if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); enviarMensajeChat(); }
+            });
+            document.getElementById('chatTextarea').addEventListener('input', function () {
+                this.style.height = 'auto';
+                this.style.height = Math.min(this.scrollHeight, 100) + 'px';
+            });
+
+            // Lightbox
+            document.getElementById('chatLightbox').addEventListener('click', () => {
+                document.getElementById('chatLightbox').classList.remove('show');
+            });
+        });
+
+        function limpiarImagen() {
+            selectedImg = null;
+            document.getElementById('chatFileInput').value = '';
+            document.getElementById('chatImgPreviewContainer').classList.remove('show');
+            document.getElementById('chatTextarea').placeholder = 'Escribe un mensaje...';
+        }
+
+        async function cargarMensajes(silent = false) {
+            if (!chatActivoIdCita) return;
+            const bodyEl = document.getElementById('chatBodyMessages');
+            if (!silent) {
+                bodyEl.innerHTML = '<div class="chat-loading-state"><i class="fas fa-spinner fa-spin"></i><br>Cargando...</div>';
+            }
+            try {
+                const res = await fetch(`/api/chat/${chatActivoIdCita}`);
+                if (!res.ok) {
+                    if (!silent) bodyEl.innerHTML = '<div class="chat-empty-state"><i class="fas fa-exclamation-circle"></i><br>Error al cargar el chat.</div>';
+                    return;
+                }
+                const mensajes = await res.json();
+                renderizarMensajes(mensajes);
+            } catch (e) {
+                if (!silent) bodyEl.innerHTML = '<div class="chat-empty-state"><i class="fas fa-wifi"></i><br>Sin conexión.</div>';
+            }
+        }
+
+        function renderizarMensajes(mensajes) {
+            const bodyEl = document.getElementById('chatBodyMessages');
+            const myId = sessionStorage.getItem('userId');
+            const wasAtBottom = bodyEl.scrollHeight - bodyEl.scrollTop <= bodyEl.clientHeight + 60;
+
+            if (mensajes.length === 0) {
+                bodyEl.innerHTML = '<div class="chat-empty-state"><i class="fas fa-comments"></i><br>Sin mensajes aún.<br><small>Escribe el primero</small></div>';
+                return;
+            }
+
+            let html = '';
+            let lastDate = '';
+
+            mensajes.forEach(msg => {
+                const isMio = msg.remitenteId === myId;
+                const cssMe = isMio ? 'me' : 'them';
+                const fechaObj = new Date(msg.fechaEnvio);
+                const fechaStr = fechaObj.toLocaleDateString('es-MX', { weekday: 'long', day: 'numeric', month: 'long' });
+                if (fechaStr !== lastDate) {
+                    html += `<div class="chat-date-sep">${fechaStr}</div>`;
+                    lastDate = fechaStr;
+                }
+                const hora = fechaObj.toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit' });
+                let contenidoHtml;
+                if (msg.tipoContenido === 'imagen') {
+                    contenidoHtml = `<img class="chat-img" src="${msg.contenido}" alt="${msg.nombreArchivo || 'Imagen'}" onclick="abrirLightboxChat('${msg.contenido}')">`;
+                } else {
+                    contenidoHtml = escapeHtmlChat(msg.contenido);
+                }
+                html += `
+                    <div class="msg-wrap ${cssMe}">
+                        ${!isMio ? `<span class="msg-sender">${escapeHtmlChat(msg.remitenteNombre)}</span>` : ''}
+                        <div class="msg-bubble ${cssMe}">${contenidoHtml}</div>
+                        <span class="msg-time">${hora}</span>
+                    </div>
+                `;
+            });
+
+            bodyEl.innerHTML = html;
+            if (wasAtBottom || !chatPolling) bodyEl.scrollTop = bodyEl.scrollHeight;
+        }
+
+        async function enviarMensajeChat() {
+            if (!chatActivoIdCita) return;
+            const texto = document.getElementById('chatTextarea').value.trim();
+            const tieneImg = selectedImg !== null;
+            if (!texto && !tieneImg) return;
+
+            const sendBtn = document.getElementById('chatSendBtn');
+            sendBtn.disabled = true;
+
+            try {
+                if (tieneImg) {
+                    const res = await fetch(`/api/chat/${chatActivoIdCita}`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ contenido: selectedImg.base64, tipoContenido: 'imagen', nombreArchivo: selectedImg.nombre })
+                    });
+                    if (!res.ok) { const e = await res.json(); alert('Error imagen: ' + e.error); }
+                    limpiarImagen();
+                }
+                if (texto) {
+                    const res = await fetch(`/api/chat/${chatActivoIdCita}`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ contenido: texto, tipoContenido: 'texto' })
+                    });
+                    if (!res.ok) { const e = await res.json(); alert('Error texto: ' + e.error); }
+                }
+                document.getElementById('chatTextarea').value = '';
+                document.getElementById('chatTextarea').style.height = 'auto';
+                await cargarMensajes(true);
+                document.getElementById('chatBodyMessages').scrollTop = document.getElementById('chatBodyMessages').scrollHeight;
+            } catch (e) {
+                alert('Error de conexión al enviar.');
+            } finally {
+                sendBtn.disabled = false;
+            }
+        }
+
+        window.abrirLightboxChat = function (src) {
+            document.getElementById('chatLightboxImg').src = src;
+            document.getElementById('chatLightbox').classList.add('show');
+        };
+
+        function escapeHtmlChat(text) {
+            const div = document.createElement('div');
+            div.appendChild(document.createTextNode(text));
+            return div.innerHTML;
+        }
     </script>
+
+    <!-- MODAL DEL CHAT -->
+    <div class="chat-modal-overlay" id="chatModalOverlay">
+        <div class="chat-modal-box">
+            <!-- Header -->
+            <div class="chat-modal-header">
+                <div>
+                    <h3 id="chatNombreCliente">Cliente</h3>
+                    <p id="chatSubtitulo"></p>
+                </div>
+                <button class="chat-close-btn" id="chatCloseBtn" title="Cerrar">&times;</button>
+            </div>
+
+            <!-- Cuerpo de mensajes -->
+            <div class="chat-body" id="chatBodyMessages">
+                <div class="chat-loading-state">
+                    <i class="fas fa-spinner fa-spin"></i><br>Cargando...
+                </div>
+            </div>
+
+            <!-- Input -->
+            <div class="chat-input-wrapper">
+                <!-- Preview imagen -->
+                <div class="chat-img-preview" id="chatImgPreviewContainer">
+                    <img id="chatImgPreview" src="" alt="Preview">
+                    <div class="chat-img-preview-info">
+                        <p id="chatImgNombre">imagen.jpg</p>
+                        <span id="chatImgSize"></span>
+                    </div>
+                    <button class="remove-preview" id="chatRemoveImg" title="Quitar">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                <!-- Fila input -->
+                <div class="chat-input-row">
+                    <button class="chat-icon-btn2" id="chatAttachBtn" title="Adjuntar imagen">
+                        <i class="fas fa-image"></i>
+                    </button>
+                    <input type="file" id="chatFileInput" accept="image/*" style="display:none">
+                    <textarea id="chatTextarea" class="chat-textarea" placeholder="Escribe un mensaje..."
+                        rows="1"></textarea>
+                    <button class="chat-send-btn" id="chatSendBtn" title="Enviar">
+                        <i class="fas fa-paper-plane"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Lightbox -->
+    <div class="lightbox-overlay" id="chatLightbox">
+        <img id="chatLightboxImg" src="" alt="Imagen ampliada">
+    </div>
+
 </body>
 
 </html>
