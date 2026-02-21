@@ -22,6 +22,7 @@ const tallerAdminRoutes = require('./routes/taller_admin');
 const mecanicoRoutes = require('./routes/auth_mecanico');
 const inventarioRoutes = require('./routes/inventario');
 const chatRoutes = require('./routes/chat');
+const pedidosCatalogoRoutes = require('./routes/pedidos_catalogo'); // Rutas para pedidos del catálogo
 
 // 3. Inicializar la aplicación de Express
 const app = express();
@@ -65,6 +66,7 @@ app.use('/api/registro', authRoutes);
 // Usar las rutas de vehículos
 app.use('/api/vehiculos', vehiculosRoutes);
 app.use('/api/pedidos', pedidosRoutes);
+app.use('/api/pedidos-catalogo', pedidosCatalogoRoutes); // Rutas para pedidos del catálogo
 app.use('/api/perfil', perfilRoutes);
 app.use('/api/resenas', resenasRoutes);
 app.use('/api/inventario', inventarioRoutes);
