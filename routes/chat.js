@@ -207,4 +207,141 @@ router.post('/:idCita', async (req, res) => {
     }
 });
 
+// ============================================================
+// GET /api/chat/taller/conversaciones - Ver TODOS los chats del taller (SOLO DUEÑO)
+// Monitoreo de seguridad: el dueño puede ver conversaciones entre mecánicos y clientes
+// ============================================================
+router.get('/taller/conversaciones', async (req, res) => {
+    const userId = req.session.userId;
+    const role = req.session.role;
+
+    // Permitir acceso solo a administradores del taller
+    if (!userId || role !== 'taller') {
+        return res.status(403).json({ error: 'No autorizado. Solo el dueño/administrador del taller puede ver esto.' });
+    }
+
+    try {
+        // Obtener el tallerId de la sesión (debe estar establecido en login)
+        const tallerId = req.session.tallerId;
+        
+        if (!tallerId) {
+            return res.status(400).json({ error: 'ID de taller no encontrado en sesión.' });
+        }
+
+        // Obtener todas las citas de este taller
+        const [citas] = await db.query(`
+            SELECT c.idCita, c.idCliente, c.idMecanico, c.estado, c.fecha
+            FROM cita c
+            WHERE c.idTaller = ?
+            ORDER BY c.fecha DESC
+        `, [tallerId]);
+
+        // Para cada cita, obtener los mensajes
+        const conversaciones = [];
+        for (const cita of citas) {
+            const [mensajes] = await db.query(`
+                SELECT 
+                    m.idMensaje,
+                    m.remitenteId,
+                    m.remitenteTipo,
+                    m.tipoContenido,
+                    m.contenido,
+                    m.nombreArchivo,
+                    m.leido,
+                    m.fechaEnvio,
+                    u.nombre AS remitenteNombre,
+                    u.email AS remitenteEmail
+                FROM chat_mensaje m
+                JOIN usuario u ON m.remitenteId = u.idUsuario
+                WHERE m.idCita = ?
+                ORDER BY m.fechaEnvio ASC
+            `, [cita.idCita]);
+
+            conversaciones.push({
+                idCita: cita.idCita,
+                estadoCita: cita.estado,
+                fechaCita: cita.fecha,
+                mensajes: mensajes
+            });
+        }
+
+        res.json({ conversaciones });
+    } catch (error) {
+        console.error('[Chat] Error al obtener conversaciones del taller:', error);
+        res.status(500).json({ error: 'Error al obtener conversaciones' });
+    }
+});
+
+// ============================================================
+// GET /api/chat/taller/cita/:idCita - Ver chat de UNA CITA específica (SOLO DUEÑO)
+// ============================================================
+router.get('/taller/cita/:idCita', async (req, res) => {
+    const { idCita } = req.params;
+    const userId = req.session.userId;
+    const role = req.session.role;
+
+    // Permitir acceso solo a administradores del taller
+    if (!userId || role !== 'taller') {
+        return res.status(403).json({ error: 'No autorizado. Solo el dueño/administrador del taller puede ver esto.' });
+    }
+
+    try {
+        const tallerId = req.session.tallerId;
+        
+        if (!tallerId) {
+            return res.status(400).json({ error: 'ID de taller no encontrado en sesión.' });
+        }
+
+        // Verificar que la cita pertenece al taller del usuario
+        const [citaVerify] = await db.query(`
+            SELECT c.idCita, c.idCliente, c.idMecanico, c.estado, c.fecha,
+                   u_cliente.nombre AS nombreCliente,
+                   u_mecanico.nombre AS nombreMecanico
+            FROM cita c
+            JOIN usuario u_cliente ON c.idCliente = u_cliente.idUsuario
+            JOIN usuario u_mecanico ON c.idMecanico = u_mecanico.idUsuario
+            WHERE c.idTaller = ? AND c.idCita = ?
+        `, [tallerId, idCita]);
+
+        if (citaVerify.length === 0) {
+            return res.status(403).json({ error: 'No tienes acceso a esta cita' });
+        }
+
+        const citaInfo = citaVerify[0];
+
+        // Obtener todos los mensajes de la cita
+        const [mensajes] = await db.query(`
+            SELECT 
+                m.idMensaje,
+                m.remitenteId,
+                m.remitenteTipo,
+                m.tipoContenido,
+                m.contenido,
+                m.nombreArchivo,
+                m.leido,
+                m.fechaEnvio,
+                u.nombre AS remitenteNombre,
+                u.email AS remitenteEmail
+            FROM chat_mensaje m
+            JOIN usuario u ON m.remitenteId = u.idUsuario
+            WHERE m.idCita = ?
+            ORDER BY m.fechaEnvio ASC
+        `, [idCita]);
+
+        res.json({
+            cita: {
+                idCita: citaInfo.idCita,
+                nombreCliente: citaInfo.nombreCliente,
+                nombreMecanico: citaInfo.nombreMecanico,
+                estado: citaInfo.estado,
+                fecha: citaInfo.fecha
+            },
+            mensajes: mensajes
+        });
+    } catch (error) {
+        console.error('[Chat] Error al obtener chat de cita:', error);
+        res.status(500).json({ error: 'Error al obtener chat de la cita' });
+    }
+});
+
 module.exports = router;

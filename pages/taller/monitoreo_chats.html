@@ -1,0 +1,462 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Monitoreo de Chats - AutoGuest</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    <link rel="stylesheet" href="../../style.css">
+    <style>
+        .dashboard-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 40px;
+            background-color: #2c2c2c;
+            border-radius: 12px;
+            margin-bottom: 40px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 25px;
+        }
+
+        .dashboard-header .logo {
+            width: 110px;
+            display: block;
+        }
+
+        .back-link {
+            color: #c0c0c0;
+            text-decoration: none;
+            font-size: 15px;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: color 0.3s ease;
+        }
+
+        .back-link:hover {
+            color: #f39c12;
+        }
+
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .chat-list-container {
+            display: grid;
+            grid-template-columns: 1fr 2fr;
+            gap: 20px;
+            min-height: calc(100vh - 200px);
+        }
+
+        .chat-list {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            overflow-y: auto;
+            max-height: calc(100vh - 200px);
+        }
+
+        .chat-list h3 {
+            margin-bottom: 20px;
+            color: #333;
+            font-size: 18px;
+        }
+
+        .chat-item {
+            padding: 15px;
+            border: 1px solid #e0e0e0;
+            border-radius: 6px;
+            margin-bottom: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: #f9f9f9;
+        }
+
+        .chat-item:hover {
+            background: #f0f0f0;
+            border-color: #f39c12;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+        }
+
+        .chat-item.active {
+            background: #fff3e0;
+            border-color: #f39c12;
+            border-left: 4px solid #f39c12;
+        }
+
+        .chat-item-title {
+            font-weight: 600;
+            color: #333;
+            font-size: 14px;
+            margin-bottom: 5px;
+        }
+
+        .chat-item-info {
+            font-size: 12px;
+            color: #666;
+            text-overflow: ellipsis;
+            overflow: hidden;
+            white-space: nowrap;
+        }
+
+        .chat-display {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            display: flex;
+            flex-direction: column;
+            max-height: calc(100vh - 200px);
+        }
+
+        .chat-header {
+            border-bottom: 2px solid #f39c12;
+            padding-bottom: 15px;
+            margin-bottom: 20px;
+        }
+
+        .chat-header h2 {
+            margin: 0;
+            color: #333;
+            font-size: 20px;
+        }
+
+        .chat-header p {
+            margin: 5px 0 0 0;
+            color: #666;
+            font-size: 13px;
+        }
+
+        .messages-container {
+            flex: 1;
+            overflow-y: auto;
+            margin-bottom: 20px;
+            padding: 15px;
+            background: #f5f5f5;
+            border-radius: 6px;
+        }
+
+        .message {
+            margin-bottom: 15px;
+            display: flex;
+            gap: 10px;
+        }
+
+        .message.cliente {
+            justify-content: flex-end;
+        }
+
+        .message-bubble {
+            max-width: 70%;
+            padding: 12px 16px;
+            border-radius: 8px;
+            word-wrap: break-word;
+        }
+
+        .message.mecanico .message-bubble {
+            background: #e3f2fd;
+            color: #333;
+            border-left: 4px solid #2196f3;
+        }
+
+        .message.cliente .message-bubble {
+            background: #f39c12;
+            color: white;
+            border-right: 4px solid #f39c12;
+        }
+
+        .message-info {
+            font-size: 11px;
+            color: #999;
+            margin-top: 3px;
+            padding: 0 16px;
+        }
+
+        .message.cliente .message-info {
+            text-align: right;
+        }
+
+        .no-chat-selected {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            color: #999;
+            text-align: center;
+        }
+
+        .no-chat-selected i {
+            font-size: 48px;
+            margin-bottom: 20px;
+            opacity: 0.5;
+        }
+
+        .security-badge {
+            display: inline-block;
+            background: #4caf50;
+            color: white;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            margin-bottom: 20px;
+        }
+
+        .security-note {
+            background: #e8f5e9;
+            border-left: 4px solid #4caf50;
+            padding: 15px;
+            border-radius: 4px;
+            margin-bottom: 20px;
+            font-size: 13px;
+            color: #333;
+        }
+
+        @media (max-width: 768px) {
+            .chat-list-container {
+                grid-template-columns: 1fr;
+            }
+
+            .message-bubble {
+                max-width: 90%;
+            }
+        }
+
+        .loading {
+            text-align: center;
+            color: #999;
+            padding: 40px;
+        }
+
+        .loading i {
+            font-size: 24px;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <header class="dashboard-header">
+        <div class="header-left">
+            <img src="../../imagenes/Logo_Autoguest.png" alt="Logo de AutoGuest" class="logo">
+            <a href="portal_taller.html" class="back-link">
+                <i class="fas fa-chevron-left"></i>
+                Volver
+            </a>
+        </div>
+        <div class="header-right">
+            <span id="userName">Usuario</span>
+            <button onclick="logout()" class="btn btn-logout">
+                <i class="fas fa-sign-out-alt"></i> Cerrar Sesión
+            </button>
+        </div>
+    </header>
+
+    <div class="container">
+        <div class="security-badge">
+            <i class="fas fa-shield-alt"></i> Monitoreo de Seguridad
+        </div>
+
+        <div class="security-note">
+            <i class="fas fa-info-circle"></i> 
+            <strong>Nota:</strong> Como dueño del taller, puedes visualizar todas las conversaciones entre tus mecánicos y clientes para garantizar la seguridad y calidad del servicio.
+        </div>
+
+        <div class="chat-list-container">
+            <div class="chat-list">
+                <h3>
+                    <i class="fas fa-comments"></i> 
+                    Conversaciones
+                </h3>
+                <div id="chatListContent">
+                    <div class="loading">
+                        <i class="fas fa-spinner"></i>
+                        <p>Cargando conversaciones...</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="chat-display">
+                <div id="chatContent">
+                    <div class="no-chat-selected">
+                        <div>
+                            <i class="fas fa-envelope-open"></i>
+                            <h3>Selecciona una conversación</h3>
+                            <p>Elige una conversación de la lista para ver los mensajes</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentChat = null;
+        let conversaciones = [];
+
+        // Obtener nombre de usuario
+        function loadUserName() {
+            const userName = sessionStorage.getItem('userName') || 'Usuario';
+            document.getElementById('userName').textContent = userName;
+        }
+
+        // Cargar todas las conversaciones
+        async function loadConversaciones() {
+            const chatListContent = document.getElementById('chatListContent');
+            chatListContent.innerHTML = '<div class="loading"><i class="fas fa-spinner"></i><p>Cargando...</p></div>';
+
+            try {
+                const response = await fetch('/api/chat/taller/conversaciones');
+                
+                if (!response.ok) {
+                    if (response.status === 403) {
+                        chatListContent.innerHTML = '<p style="color: red; padding: 20px;">No tienes permisos para ver esta sección.</p>';
+                        return;
+                    }
+                    throw new Error(`Error ${response.status}`);
+                }
+
+                const data = await response.json();
+                conversaciones = data.conversaciones || [];
+
+                if (conversaciones.length === 0) {
+                    chatListContent.innerHTML = '<p style="color: #999; padding: 20px;">No hay conversaciones disponibles.</p>';
+                    return;
+                }
+
+                let html = '';
+                conversaciones.forEach((conv, index) => {
+                    const lastMsg = conv.mensajes.length > 0 ? conv.mensajes[conv.mensajes.length - 1] : null;
+                    const preview = lastMsg ? lastMsg.contenido.substring(0, 30) : 'Sin mensajes';
+                    
+                    html += `
+                        <div class="chat-item" onclick="selectChat(${index})">
+                            <div class="chat-item-title">
+                                <i class="fas fa-comments"></i> 
+                                Cita: ${conv.idCita}
+                            </div>
+                            <div class="chat-item-info">
+                                <strong>Estado:</strong> ${conv.estadoCita}
+                            </div>
+                            <div class="chat-item-info">
+                                <strong>Mensajes:</strong> ${conv.mensajes.length}
+                            </div>
+                            <div class="chat-item-info" style="margin-top: 5px; color: #f39c12;">
+                                "${preview}${preview.length >= 30 ? '...' : ''}"
+                            </div>
+                        </div>
+                    `;
+                });
+
+                chatListContent.innerHTML = html;
+            } catch (error) {
+                console.error('Error cargando conversaciones:', error);
+                chatListContent.innerHTML = `<p style="color: red; padding: 20px;">Error al cargar las conversaciones: ${error.message}</p>`;
+            }
+        }
+
+        // Seleccionar y mostrar un chat
+        function selectChat(index) {
+            currentChat = conversaciones[index];
+            const chatContent = document.getElementById('chatContent');
+
+            // Actualizar estilo activo
+            document.querySelectorAll('.chat-item').forEach((item, i) => {
+                item.classList.toggle('active', i === index);
+            });
+
+            // Mostrar chat
+            if (currentChat.mensajes.length === 0) {
+                chatContent.innerHTML = `
+                    <div class="no-chat-selected">
+                        <div>
+                            <i class="fas fa-envelope-open"></i>
+                            <h3>Sin mensajes</h3>
+                            <p>Esta cita no tiene mensajes aún.</p>
+                        </div>
+                    </div>
+                `;
+                return;
+            }
+
+            // Construir header
+            let html = `
+                <div class="chat-header">
+                    <h2>Cita: ${currentChat.idCita}</h2>
+                    <p><strong>Estado:</strong> ${currentChat.estadoCita} | <strong>Fecha:</strong> ${new Date(currentChat.fechaCita).toLocaleString('es-ES')}</p>
+                    <p><strong>Total de mensajes:</strong> ${currentChat.mensajes.length}</p>
+                </div>
+                <div class="messages-container">
+            `;
+
+            // Agregar mensajes
+            currentChat.mensajes.forEach(msg => {
+                const fecha = new Date(msg.fechaEnvio).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' });
+                const tipoBurbuja = msg.remitenteTipo === 'mecanico' ? 'mecanico' : 'cliente';
+                
+                const labelRemitente = msg.remitenteTipo === 'mecanico' ? '🔧 Mecánico' : '👤 Cliente';
+                
+                html += `
+                    <div class="message ${tipoBurbuja}">
+                        <div>
+                            <div class="message-bubble">
+                                <strong>${labelRemitente}:</strong><br>
+                                ${msg.contenido}
+                            </div>
+                            <div class="message-info">
+                                ${msg.remitenteNombre} • ${fecha}
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+
+            html += `</div>`;
+            chatContent.innerHTML = html;
+
+            // Scroll al final
+            setTimeout(() => {
+                const messagesContainer = document.querySelector('.messages-container');
+                if (messagesContainer) {
+                    messagesContainer.scrollTop = messagesContainer.scrollHeight;
+                }
+            }, 100);
+        }
+
+        // Logout
+        function logout() {
+            sessionStorage.clear();
+            window.location.href = '../../login_taller.html';
+        }
+
+        // Inicializar
+        window.addEventListener('load', () => {
+            loadUserName();
+            loadConversaciones();
+
+            // Recargar conversaciones cada 5 segundos
+            setInterval(loadConversaciones, 5000);
+        });
+    </script>
+</body>
+</html>
